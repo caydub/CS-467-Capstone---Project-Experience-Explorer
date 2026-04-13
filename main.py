@@ -1,6 +1,6 @@
 import os
 import pymysql
-from flask import Flask, render_template
+from flask import Flask, render_template  # noqa: F401
 from dotenv import load_dotenv
 
 # load variables from .env file into the environment (local development only)
