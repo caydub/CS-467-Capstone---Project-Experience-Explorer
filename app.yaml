@@ -1,5 +1,8 @@
 runtime: python313
 
+beta_settings:
+  cloud_sql_instances: project-experience-explorer:us-central1:project-experience-explorer-db
+
 handlers:
   - url: /static
     static_dir: static
