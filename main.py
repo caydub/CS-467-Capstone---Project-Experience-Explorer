@@ -37,7 +37,10 @@ db_config = {
 
 
 if os.environ.get('GAE_ENV', '').startswith('standard'):
-    db_config['unix_socket'] = '/cloudsql/project-experience-explorer:us-central1:project-experience-explorer-db'
+    db_config['unix_socket'] = (
+        '/cloudsql/project-experience-explorer:us-central1:'
+        'project-experience-explorer-db'
+    )
 else:
     db_config['host'] = '127.0.0.1'
 
@@ -56,8 +59,15 @@ projects = {
         'difficulty_score': 8,
         'recommend': 'Yes',
         'review_count': 1,
-        'top_snippet': 'Fun project with a lot of creative freedom, but it can get difficult as there are a lot of moving parts.',
-        'description': 'You will recreate one or more classic arcade games in Augmented Reality and/or Virtual Reality. You choose the game(s). You choose AR, VR, or both!'
+        'top_snippet': (
+            'Fun project with a lot of creative freedom, but it can get difficult '
+            'as there are a lot of moving parts.'
+        ),
+        'description': (
+            'You will recreate one or more classic arcade games in Augmented '
+            'Reality and/or Virtual Reality. You choose the game(s). You choose '
+            'AR, VR, or both!'
+        )
     },
 
     2: {
@@ -68,8 +78,15 @@ projects = {
         'difficulty_score': 5,
         'recommend': 'Yes',
         'review_count': 1,
-        'top_snippet': 'Fairly straightforward project that can be as detailed as the student wants, depending on number of features built.',
-        'description': 'This web app allows students to track their internship/job hunting efforts. The target users would be CS students who are attempting to land internships and full time positions upon graduation.'
+        'top_snippet': (
+            'Fairly straightforward project that can be as detailed as the '
+            'student wants, depending on number of features built.'
+        ),
+        'description': (
+            'This web app allows students to track their internship/job hunting '
+            'efforts. The target users would be CS students who are attempting '
+            'to land internships and full time positions upon graduation.'
+        )
     },
 
     3: {
@@ -81,7 +98,11 @@ projects = {
         'recommend': 'Yes',
         'review_count': 1,
         'top_snippet': 'Fun but slightly difficult project.',
-        'description': 'Mobile treasure hunt game that gives clues and uses GPS to determine if the user has solved the clue. Each clue can lead to the next and so on until the treasure is found.'
+        'description': (
+            'Mobile treasure hunt game that gives clues and uses GPS to determine '
+            'if the user has solved the clue. Each clue can lead to the next and '
+            'so on until the treasure is found.'
+        )
     }
 }
 
@@ -90,14 +111,20 @@ reviews = {
         {
             'reviewer': 'user1',
             'term': 'Spring 2025',
-            'text': 'Fun project with a lot of creative freedom, but it can get difficult as there are a lot of moving parts.'
+            'text': (
+                'Fun project with a lot of creative freedom, but it can get '
+                'difficult as there are a lot of moving parts.'
+            )
         },
     ],
     2: [
         {
             'reviewer': 'user2',
             'term': 'Fall 2025',
-            'text': 'Fairly straightforward project that can be as detailed as the student wants, depending on number of features built.'
+            'text': (
+                'Fairly straightforward project that can be as detailed as the '
+                'student wants, depending on number of features built.'
+            )
         }
     ],
     3: [
@@ -137,7 +164,11 @@ def project_detail(id):
         return "Project not found", 404
 
     project_reviews = reviews.get(id, [])
-    return render_template('project_detail.html', project=project, reviews=project_reviews)
+    return render_template(
+        'project_detail.html',
+        project=project,
+        reviews=project_reviews
+    )
 
 
 @app.route('/test-db')
