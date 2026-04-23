@@ -1,17 +1,16 @@
-create schema if not exists project_exlorer;
+create schema if not exists project_explorer;
 
-create table projects (
+use project_explorer;
+create table if not exists projects (
 project_id 			int unsigned auto_increment primary key,
-external_source_id 	varchar(255) not null,
 url 				varchar(255),
 title 				varchar(255),
 description 		varchar(8000),
 details 			varchar(4000),
-last_scraped 		timestamp default current_timestamp,
-unique key unique_external_id (external_source_id)
+last_scraped 		timestamp default current_timestamp
 );
 
-create table reviews (
+create table if not exists reviews (
 	review_id int unsigned primary key,
     project_id int unsigned not null,
     review_text varchar(4000),
@@ -23,14 +22,14 @@ create table reviews (
 		on delete cascade
 );
 
-create table criteria (
+create table if not exists criteria (
 	criteria_id	int unsigned auto_increment primary key,
     name varchar(100) not null unique,
     description varchar (1000),
     is_active boolean default true
 );
 
-create table review_ratings (
+create table if not exists review_ratings (
 	review_rating_id int unsigned primary key,
     review_id 		int unsigned not null,
     criteria_id 	int unsigned not null,
@@ -47,7 +46,7 @@ create table review_ratings (
 	unique key unique_review_criteria (review_id, criteria_id)
 );
 
-create table students (
+create table if not exists students (
 	student_id	int unsigned auto_increment primary key,
     school_email	varchar(255) not null unique,
     hashed_password varchar(255) not null,
@@ -55,6 +54,10 @@ create table students (
 );
 
 /*--------------------------------------------------*/
+insert into projects (title)
+value
+('Test')
+on duplicate key update title = title;
 
 -- Examples of criterias students may use as part of their review
 insert into criteria (name, description)
