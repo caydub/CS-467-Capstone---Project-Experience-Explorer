@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 
-#------------------------------ Obtaining Project URLs ------------------------------#
+# ------------------------------ Obtaining Project URLs ------------------------------#
 # base URL for concantenation purposes
 base_url = "https://eecs.engineering.oregonstate.edu/capstone/submission/"
 # contains ALL projects (including ones not in just CS 467)
@@ -59,7 +59,7 @@ print(*project_links, sep='\n')
 print(len(project_links))
 time.sleep(5)
 
-#------------------------------ Obtaining Individual Project Details ------------------------------#
+# ------------------------------ Obtaining Individual Project Details ------------------------------#
 # Loop through each project link
 for project_link in project_links:
     response = requests.get(project_link)
