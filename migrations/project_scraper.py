@@ -68,4 +68,4 @@ for project_link in project_links:
         title = text.get_text(strip=True)
 
     print(title)
-    
+
