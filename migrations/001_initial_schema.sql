@@ -1,6 +1,5 @@
-create schema if not exists project_explorer;
-
-use project_explorer;
+create schema if not exists project_explorer_db;
+use project_explorer_db;
 
 create table if not exists projects (
     project_id      int unsigned auto_increment primary key,
