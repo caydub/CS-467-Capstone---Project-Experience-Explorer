@@ -22,20 +22,20 @@
 
         <!-- Ratings / summary -->
         <div class="project-summary">
-            <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
+            <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
 
             <div class="rating-bar">
-                <div class="rating-fill" style="width: {{ project.difficulty * 20 }}%;"></div>
+                <div class="rating-fill" style="width: {{ (project.difficulty * 20) if project.difficulty else 0 }}%;"></div>
             </div>
 
-            <p><strong>Workload:</strong> {{ project.workload }}</p>
-            <p><strong>Would recommend:</strong> {{ project.would_recommend }}</p>
+            <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
+            <p><strong>Would recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
         </div>
 
         <!-- Review info -->
         <div class="project-reviews">
             <p><strong>Reviews:</strong> {{ project.review_count }}</p>
-            <p><strong>Top review:</strong> {{ project.top_snippet }}</p>
+            <p><strong>Top review:</strong> {{ project.top_snippet if project.top_snippet else 'No reviews yet' }}</p>
         </div>
 
         <a href="/project/{{ project.project_id }}" class="button">View Details</a>
