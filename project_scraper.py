@@ -3,6 +3,7 @@
 import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
+import time
 
 #------------------------------ Obtaining Project URLs ------------------------------#
 # base URL for concantenation purposes
@@ -54,8 +55,9 @@ for project in soup.select(".masonry-brick"):
             if a_tag:
                 project_links.append(base_url + a_tag.get("href"))
 
-#print(*project_links, sep='\n')
+print(*project_links, sep='\n')
 print(len(project_links))
+time.sleep(5)
 
 #------------------------------ Obtaining Individual Project Details ------------------------------#
 # Loop through each project link
