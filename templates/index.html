@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Projects{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Browse Projects</h1>
+    <p>Explore and read reviews of Capstone Projects from past students.</p>
+</div>
+
+<form class="search-bar" method="GET" action="/">
+    <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
+    <button type="submit" class="button">Search</button>
+</form>
+
+{% if projects %}
+    {% for project in projects %}
+    <div class="project-card">
+
+        <h3>{{ project.title }}</h3>
+    
+        <!-- Ratings / summary -->
+        <div class="project-summary">
+            <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
+        
+            <div class="rating-bar">
+                <div class="rating-fill" style="width: {{ project.difficulty_score * 10 }}%;"></div>
+            </div>
+        
+            <p><strong>Workload:</strong> {{ project.workload }}</p>
+            <p><strong>Would recommend:</strong> {{ project.recommend }}</p>
+        </div>
+    
+        <!-- Review info -->
+        <div class="project-reviews">
+            <p><strong>Reviews:</strong> {{ project.review_count }}</p>
+            <p><strong>Top review:</strong> {{ project.top_snippet }}</p>
+        </div>
+    
+        <a href="/project/{{ project.id }}" class="button">View Details</a>
+    
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="project-card">
+        <p>No projects found. Please search again.</p>
+    </div>
+{% endif %}
+
+{% endblock %}
