@@ -3,7 +3,7 @@
 **Project Experience Explorer — CS 467 Spring 2026**
 Caleb Richter, Henry Thong, Benjamin Joseph
 
-This is a living document. Fill in the schema sections as the team finalizes decisions.
+This is a living document. Update it as the schema evolves.
 
 ---
 
@@ -35,11 +35,9 @@ We use **numbered migration files** in a `/migrations` folder. Each file represe
 - Everyone runs new migration files when they pull them from the repo
 - The live Cloud SQL database gets the same migrations applied manually before deploying
 
-### During Early Development (now)
+### During Early Development
 
-While the app has no real user data, `001_initial_schema.sql` can still use `DROP TABLE IF EXISTS` — this lets us iterate on the schema freely without worrying about data loss.
-
-Once real users start submitting reviews, we switch to additive-only migrations:
+While the app has no real user data, schema changes can be made freely by updating `001_initial_schema.sql` and re-running it. Once real users start submitting reviews, switch to additive-only migrations:
 - `ALTER TABLE` to add columns
 - `CREATE TABLE` for new tables
 - Never `DROP TABLE` on a table with real data
@@ -54,110 +52,111 @@ Once real users start submitting reviews, we switch to additive-only migrations:
 | Change a column type | Yes — `ALTER TABLE MODIFY COLUMN` |
 | Add an index | Yes |
 | Fix a typo in the schema | Yes — `ALTER TABLE` |
-| Seed data (test data) | Optional — separate seed files |
+| Seed data | Optional — separate seed files |
 
 ---
 
 ## Schema
 
-> **Status: In progress — to be finalized by the team**
-> Henry is working on the initial schema. Use this section to document decisions.
+> **Status: Finalized — April 23, 2026**
 
-### Entities (draft — open for edits)
+### Design Decisions
 
-**Projects**
-- project_id (PK)
-- name
-- description
-- sponsor
-- portal_url
-- created_at
-
-> Team discussion: what other metadata do we want from the Capstone portal?
+- **Ratings as columns on reviews** (not a separate table) — simpler queries, criteria are fixed for the project scope. Criteria: difficulty, workload, team_dynamics, would_recommend.
+- **students table stores onid_hash and pseudonym** — no raw ONID stored, no password stored. Pseudonym is generated on first login.
+- **term on reviews** — stores when the experience happened (e.g. "Spring 2026"), not when the review was submitted.
 
 ---
 
-**Users** (pseudonym mapping)
-- user_id (PK)
-- onid_hash (hashed ONID — never store raw ONID)
-- pseudonym
-- created_at
+### Tables
 
-> Team discussion: how do we handle pseudonyms in the MVP without ONID auth? Generate on first review submission?
-
----
-
-**Reviews**
-- review_id (PK)
-- project_id (FK → Projects)
-- user_id (FK → Users)
-- term (e.g. "Spring 2026" — when the experience happened, not when submitted)
-- body (written qualitative feedback)
-- created_at
+**projects**
+| Column | Type | Notes |
+|--------|------|-------|
+| project_id | int unsigned PK | auto_increment |
+| url | varchar(255) | Capstone portal link |
+| title | varchar(255) | not null |
+| description | varchar(8000) | |
+| details | varchar(4000) | |
+| last_scraped | timestamp | default current_timestamp |
 
 ---
 
-**Ratings**
-- rating_id (PK)
-- review_id (FK → Reviews)
-- criteria (e.g. "complexity", "time_commitment", "team_dynamics")
-- score (1-5)
-
-> Team discussion: separate ratings table (flexible, easy to add criteria) vs rating columns directly on reviews (simpler queries)? TBD.
-
----
-
-**Helpfulness**
-- helpfulness_id (PK)
-- review_id (FK → Reviews)
-- user_id (FK → Users)
-- value (1 = helpful, -1 = not helpful)
+**students**
+| Column | Type | Notes |
+|--------|------|-------|
+| student_id | int unsigned PK | auto_increment |
+| onid_hash | varchar(255) | not null, unique — hashed ONID, never raw |
+| pseudonym | varchar(100) | not null, unique |
+| created_at | timestamp | default current_timestamp |
 
 ---
 
-**Comments**
-- comment_id (PK)
-- review_id (FK → Reviews)
-- user_id (FK → Users)
-- body
-- created_at
+**reviews**
+| Column | Type | Notes |
+|--------|------|-------|
+| review_id | int unsigned PK | auto_increment |
+| project_id | int unsigned FK | references projects |
+| student_id | int unsigned FK | references students |
+| term | varchar(50) | e.g. "Spring 2026" — when experience happened |
+| review_text | varchar(4000) | qualitative feedback |
+| difficulty | int | 1-5 |
+| workload | int | 1-5 |
+| team_dynamics | int | 1-5 |
+| would_recommend | int | 1-5 |
+| created_at | timestamp | default current_timestamp |
+
+---
+
+**helpfulness**
+| Column | Type | Notes |
+|--------|------|-------|
+| helpfulness_id | int unsigned PK | auto_increment |
+| review_id | int unsigned FK | references reviews |
+| student_id | int unsigned FK | references students |
+| value | tinyint | 1 = helpful, -1 = not helpful |
+
+Unique constraint on (student_id, review_id) — one vote per student per review.
+
+---
+
+**comments**
+| Column | Type | Notes |
+|--------|------|-------|
+| comment_id | int unsigned PK | auto_increment |
+| review_id | int unsigned FK | references reviews |
+| student_id | int unsigned FK | references students |
+| comment_text | varchar(2000) | not null |
+| created_at | timestamp | default current_timestamp |
 
 ---
 
 ### Relationships
 
-> Fill this in once entities are finalized.
-
 | Relationship | Type |
 |-------------|------|
-| Projects → Reviews | one to many |
-| Users → Reviews | one to many |
-| Reviews → Ratings | one to many |
-| Reviews → Comments | one to many |
-| Reviews → Helpfulness | one to many |
-| Users → Helpfulness | one to many |
-| Users → Comments | one to many |
+| projects → reviews | one to many |
+| students → reviews | one to many |
+| reviews → helpfulness | one to many |
+| students → helpfulness | one to many |
+| reviews → comments | one to many |
+| students → comments | one to many |
 
 ---
 
-### Open Questions for Team Discussion
+### Open Questions
 
-- [ ] What metadata do we want on projects beyond name, description, and portal link?
-- [ ] How many rating criteria and what are they? (complexity, time commitment, team dynamics, ...)
-- [ ] Ratings as rows in a separate table vs columns on the reviews table?
-- [ ] How do we handle pseudonyms in the MVP before ONID auth is built?
+- [ ] How do we handle pseudonyms before ONID auth is built? Generate on first review submission?
 - [ ] Do we need a way to flag reviews as inappropriate?
-- [ ] Should comments be nested (replies to comments) or flat (replies to reviews only)?
+- [ ] Should comments be flat only (replies to reviews) or nested (replies to comments)?
 
 ---
 
 ## Migration Files
 
-> Add entries here as migration files are created.
-
 | File | Description | Author | Date |
 |------|-------------|--------|------|
-| 001_initial_schema.sql | Initial schema — all tables | TBD | TBD |
+| 001_initial_schema.sql | Initial schema — projects, students, reviews, helpfulness, comments | Henry Thong | April 2026 |
 
 ---
 
@@ -166,7 +165,7 @@ Once real users start submitting reviews, we switch to additive-only migrations:
 When a new migration file is added to `/migrations`, run it against your local database:
 
 ```bash
-mysql -u root -p your_local_database < migrations/002_example.sql
+mysql -u root -p project_explorer < migrations/001_initial_schema.sql
 ```
 
 Or open it in MySQL Workbench / Cloud SQL Studio and run it manually.

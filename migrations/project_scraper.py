@@ -28,7 +28,6 @@ for project in soup.select(".masonry-brick"):
     # finds the "a href="
     a_tag = project.select_one("a")
 
-    # if href exists and can be retrieved, append in the project list
     if a_tag and a_tag.get("href"):
         project_links.append(base_url + a_tag.get("href"))
 
@@ -41,12 +40,10 @@ print(len(project_links))
 project_links = []
 project_links.clear()
 
-# finds the div class "masonry-brick"/"masontry-brick reqNDA"
 for project in soup.select(".masonry-brick"):
     filter = project.select_one(".card-body .text-muted")
 
     if filter:
-        # strip=True removes all excess whitespace (including tab and newlines)
         text = filter.get_text(strip=True)
 
         if "Courses: CS467" in text:
@@ -60,7 +57,6 @@ print(len(project_links))
 time.sleep(5)
 
 # ------------------------------ Obtaining Individual Project Details ------------------------------ #
-# Loop through each project link
 for project_link in project_links:
     response = requests.get(project_link)
     html_string = response.text
