@@ -7,9 +7,9 @@
 <h1>{{ project.title }}</h1>
 
 <div class="project-card">
-    <p><strong>Workload:</strong> {{ project.workload }}</p>
     <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
-    <p><strong>Would recommend:</strong> {{ project.recommend }}</p>
+    <p><strong>Workload:</strong> {{ project.workload }}</p>
+    <p><strong>Would recommend:</strong> {{ project.would_recommend }}</p>
     <p><strong>Description:</strong> {{ project.description }}</p>
 </div>
 
@@ -18,9 +18,9 @@
 {% if reviews %}
     {% for review in reviews %}
     <div class="project-card">
-        <h3>Reviewer: {{ review.reviewer }}</h3>
+        <h3>Reviewer: {{ review.pseudonym }}</h3>
         <p class="project-meta">Term: {{ review.term }}</p>
-        <p>{{ review.text }}</p>
+        <p>{{ review.review_text }}</p>
     </div>
     {% endfor %}
 {% else %}

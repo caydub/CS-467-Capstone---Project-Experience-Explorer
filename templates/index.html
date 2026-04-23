@@ -19,27 +19,27 @@
     <div class="project-card">
 
         <h3>{{ project.title }}</h3>
-    
+
         <!-- Ratings / summary -->
         <div class="project-summary">
             <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
-        
+
             <div class="rating-bar">
-                <div class="rating-fill" style="width: {{ project.difficulty_score * 10 }}%;"></div>
+                <div class="rating-fill" style="width: {{ project.difficulty * 20 }}%;"></div>
             </div>
-        
+
             <p><strong>Workload:</strong> {{ project.workload }}</p>
-            <p><strong>Would recommend:</strong> {{ project.recommend }}</p>
+            <p><strong>Would recommend:</strong> {{ project.would_recommend }}</p>
         </div>
-    
+
         <!-- Review info -->
         <div class="project-reviews">
             <p><strong>Reviews:</strong> {{ project.review_count }}</p>
             <p><strong>Top review:</strong> {{ project.top_snippet }}</p>
         </div>
-    
-        <a href="/project/{{ project.id }}" class="button">View Details</a>
-    
+
+        <a href="/project/{{ project.project_id }}" class="button">View Details</a>
+
     </div>
     {% endfor %}
 {% else %}
