@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 
-# ------------------------------ Obtaining Project URLs ------------------------------#
+# ------------------------------ Obtaining Project URLs ------------------------------ #
 # base URL for concantenation purposes
 base_url = "https://eecs.engineering.oregonstate.edu/capstone/submission/"
 # contains ALL projects (including ones not in just CS 467)
@@ -44,22 +44,22 @@ project_links.clear()
 # finds the div class "masonry-brick"/"masontry-brick reqNDA"
 for project in soup.select(".masonry-brick"):
     filter = project.select_one(".card-body .text-muted")
-    
+
     if filter:
         # strip=True removes all excess whitespace (including tab and newlines)
         text = filter.get_text(strip=True)
-        
+
         if "Courses: CS467" in text:
             a_tag = project.select_one("a")
-            
+
             if a_tag:
                 project_links.append(base_url + a_tag.get("href"))
 
-print(*project_links, sep='\n')
+print(*project_links, sep="\n")
 print(len(project_links))
 time.sleep(5)
 
-# ------------------------------ Obtaining Individual Project Details ------------------------------#
+# ------------------------------ Obtaining Individual Project Details ------------------------------ #
 # Loop through each project link
 for project_link in project_links:
     response = requests.get(project_link)
@@ -72,3 +72,4 @@ for project_link in project_links:
         title = text.get_text(strip=True)
 
     print(title)
+    
