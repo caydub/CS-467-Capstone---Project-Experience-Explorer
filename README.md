@@ -71,7 +71,7 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 | Week | Status |
 |------|--------|
 | Week 1 | Infrastructure initialized — GCP, Cloud SQL, App Engine, GitHub CI/CD. Project plan submitted. |
-| Week 2 | Database schema, base templates, Capstone portal scraping — in progress |
+| Week 2 | Schema finalized and deployed to Cloud SQL. 28 CS467 projects scraped and seeded. Flask routes wired to database. Live app showing real project data. PR1 submitted. |
 | Week 3 | — |
 | Week 4 | — |
 | Week 5 | — |

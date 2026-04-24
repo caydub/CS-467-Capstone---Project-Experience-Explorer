@@ -176,12 +176,26 @@ Each entry includes what was decided, why, what alternatives were considered, an
 
 ---
 
+### 011 — Rating columns on reviews table
+
+**Date:** April 23, 2026
+**Decision:** Rating criteria are columns directly on the reviews table: `difficulty`, `workload`, `team_dynamics`, `would_recommend` (all 1-5 integers). No separate criteria or review_ratings tables.
+
+**Why:**
+- Criteria are fixed for the project scope — no need for dynamic extensibility
+- Simpler queries — `SELECT difficulty, workload FROM reviews` just works with no JOINs
+- Maps directly to what Ben built in the templates
+- Easier to explain and demo in Progress Reports
+
+**Alternatives considered:**
+- Separate `criteria` and `review_ratings` tables (Henry's original approach) — rejected for this project's scope. Technically superior for extensibility but adds unnecessary complexity for a fixed set of 4 criteria.
+
+---
+
 ## Open Decisions
 
 | # | Question | Status |
 |---|----------|--------|
-| 011 | Rating criteria — what are they and how many? | TBD — team discussion |
-| 012 | Ratings as separate table rows vs columns on reviews table? | TBD — team discussion |
-| 013 | Local MySQL for dev vs shared Cloud SQL? | Flagged — revisit when schema is ready |
-| 014 | Pseudonym generation — how exactly? Random words, adjective+noun, etc? | TBD |
-| 015 | Capstone portal scraping approach | Henry investigating Wednesday April 16 |
+| 012 | Local MySQL for dev vs shared Cloud SQL? | Flagged — revisit when schema is ready |
+| 013 | Pseudonym generation — how exactly? Random words, adjective+noun, etc? | TBD |
+| 014 | Capstone portal scraping approach | Henry investigating Wednesday April 16 |
