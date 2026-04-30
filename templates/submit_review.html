@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Review{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Submit a Review</h1>
+    <p>Share your experience with this capstone project.</p>
+</section>
+
+<section class="form-card">
+    <div class="login-prompt">
+        <strong>ONID login required</strong>
+        <p>In the final version, students will need to sign in with ONID before submitting a review.</p>
+    </div>
+
+    <form action="#" method="post">
+        <label for="term">Term</label>
+        <input
+            type="text"
+            id="term"
+            name="term"
+            placeholder="Example: Spring 2025"
+            required
+        >
+
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty" name="difficulty" required>
+            <option value="">Select a rating</option>
+            <option value="1">1 - Very easy</option>
+            <option value="2">2 - Easy</option>
+            <option value="3">3 - Moderate</option>
+            <option value="4">4 - Hard</option>
+            <option value="5">5 - Very hard</option>
+        </select>
+
+        <label for="workload">Workload</label>
+        <select id="workload" name="workload" required>
+            <option value="">Select a rating</option>
+            <option value="1">1 - Very light</option>
+            <option value="2">2 - Light</option>
+            <option value="3">3 - Moderate</option>
+            <option value="4">4 - Heavy</option>
+            <option value="5">5 - Very heavy</option>
+        </select>
+
+        <label for="team_dynamics">Team Dynamics</label>
+        <select id="team_dynamics" name="team_dynamics" required>
+            <option value="">Select a rating</option>
+            <option value="1">1 - Very poor</option>
+            <option value="2">2 - Poor</option>
+            <option value="3">3 - Average</option>
+            <option value="4">4 - Good</option>
+            <option value="5">5 - Excellent</option>
+        </select>
+
+        <label for="would_recommend">Would Recommend</label>
+        <select id="would_recommend" name="would_recommend" required>
+            <option value="">Select a rating</option>
+            <option value="1">1 - Strongly disagree</option>
+            <option value="2">2 - Disagree</option>
+            <option value="3">3 - Neutral</option>
+            <option value="4">4 - Agree</option>
+            <option value="5">5 - Strongly agree</option>
+        </select>
+
+        <label for="review_text">Review</label>
+        <textarea
+            id="review_text"
+            name="review_text"
+            rows="6"
+            placeholder="Describe your experience with this project."
+            required
+        ></textarea>
+
+        <button type="submit" class="button">Submit Review</button>
+    </form>
+
+    <p>
+        <a href="{{ url_for('project_detail', project_id=project_id) }}">
+            Back to project details
+        </a>
+    </p>
+</section>
+{% endblock %}
