@@ -149,12 +149,6 @@ def project_detail(project_id):
     )
 
 
-@app.route('/project/<int:project_id>/submit-review')
-def submit_review(project_id):
-    """Display the review submission page."""
-    return render_template('submit_review.html', project_id=project_id)
-
-
 @app.route('/test-db')
 def test_db():
     """Temporary route to verify the database connection is working.

@@ -6,10 +6,6 @@
 
 <h1>{{ project.title }}</h1>
 
-<a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
-    Submit Review
-</a>
-
 <div class="project-card">
     <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
     <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
@@ -33,6 +29,6 @@
     </div>
 {% endif %}
 
-<a href="{{ url_for('home') }}" class="button">Back to Projects</a>
+<a href="/" class="button">Back to Projects</a>
 
 {% endblock %}

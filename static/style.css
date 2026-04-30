@@ -184,33 +184,3 @@ body {
         margin: 1.5rem auto;
     }
 }
-
-/* Review Form Styles */
-.form-card {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.form-card form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.form-card input,
-.form-card select,
-.form-card textarea {
-    padding: 0.75rem;
-    font: inherit;
-}
-
-.login-prompt {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: #f5f5f5;
-    border-left: 4px solid #444;
-}
