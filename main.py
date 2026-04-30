@@ -3,7 +3,6 @@ import pymysql
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
 
-
 # Load variables from .env file into the environment (local development only)
 load_dotenv()
 
@@ -35,7 +34,6 @@ db_config = {
     'cursorclass': pymysql.cursors.DictCursor
 }
 
-
 if os.environ.get('GAE_ENV', '').startswith('standard'):
     db_config['unix_socket'] = (
         '/cloudsql/project-experience-explorer:us-central1:'
@@ -50,125 +48,111 @@ def get_db_connection():
     return pymysql.connect(**db_config)
 
 
-projects = {
-    1: {
-        'id': 1,
-        'title': 'AR Arcade Classics',
-        'workload': 'High',
-        'difficulty': '8/10',
-        'difficulty_score': 8,
-        'recommend': 'Yes',
-        'review_count': 1,
-        'top_snippet': (
-            'Fun project with a lot of creative freedom, but it can get difficult '
-            'as there are a lot of moving parts.'
-        ),
-        'description': (
-            'You will recreate one or more classic arcade games in Augmented '
-            'Reality and/or Virtual Reality. You choose the game(s). You choose '
-            'AR, VR, or both!'
-        )
-    },
-
-    2: {
-        'id': 2,
-        'title': 'Job Tracker',
-        'workload': 'Medium',
-        'difficulty': '5/10',
-        'difficulty_score': 5,
-        'recommend': 'Yes',
-        'review_count': 1,
-        'top_snippet': (
-            'Fairly straightforward project that can be as detailed as the '
-            'student wants, depending on number of features built.'
-        ),
-        'description': (
-            'This web app allows students to track their internship/job hunting '
-            'efforts. The target users would be CS students who are attempting '
-            'to land internships and full time positions upon graduation.'
-        )
-    },
-
-    3: {
-        'id': 3,
-        'title': 'Mobile Treasure Hunt - Cross-Platform',
-        'workload': 'Very High',
-        'difficulty': '8/10',
-        'difficulty_score': 8,
-        'recommend': 'Yes',
-        'review_count': 1,
-        'top_snippet': 'Fun but slightly difficult project.',
-        'description': (
-            'Mobile treasure hunt game that gives clues and uses GPS to determine '
-            'if the user has solved the clue. Each clue can lead to the next and '
-            'so on until the treasure is found.'
-        )
-    }
-}
-
-reviews = {
-    1: [
-        {
-            'reviewer': 'user1',
-            'term': 'Spring 2025',
-            'text': (
-                'Fun project with a lot of creative freedom, but it can get '
-                'difficult as there are a lot of moving parts.'
-            )
-        },
-    ],
-    2: [
-        {
-            'reviewer': 'user2',
-            'term': 'Fall 2025',
-            'text': (
-                'Fairly straightforward project that can be as detailed as the '
-                'student wants, depending on number of features built.'
-            )
-        }
-    ],
-    3: [
-        {
-            'reviewer': 'user3',
-            'term': 'Winter 2025',
-            'text': 'Fun but slightly difficult project.'
-        }
-    ]
-}
-
-
 @app.route('/')
 def home():
+    """Render the project listing page with optional search filtering."""
     search_query = request.args.get('search', '').strip()
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
     if search_query:
-        filtered_projects = [
-            project for project in projects.values()
-            if search_query.lower() in project['title'].lower()
-        ]
+        cursor.execute("""
+            SELECT
+                p.project_id,
+                p.title,
+                p.description,
+                COUNT(r.review_id) AS review_count,
+                AVG(r.difficulty) AS difficulty,
+                AVG(r.workload) AS workload,
+                AVG(r.would_recommend) AS would_recommend,
+                MAX(r.review_text) AS top_snippet
+            FROM projects p
+            LEFT JOIN reviews r ON p.project_id = r.project_id
+            WHERE p.title LIKE %s
+            GROUP BY p.project_id
+            ORDER BY p.title
+        """, (f'%{search_query}%',))
     else:
-        filtered_projects = list(projects.values())
+        cursor.execute("""
+            SELECT
+                p.project_id,
+                p.title,
+                p.description,
+                COUNT(r.review_id) AS review_count,
+                AVG(r.difficulty) AS difficulty,
+                AVG(r.workload) AS workload,
+                AVG(r.would_recommend) AS would_recommend,
+                MAX(r.review_text) AS top_snippet
+            FROM projects p
+            LEFT JOIN reviews r ON p.project_id = r.project_id
+            GROUP BY p.project_id
+            ORDER BY p.title
+        """)
+
+    projects = cursor.fetchall()
+    conn.close()
 
     return render_template(
         'index.html',
-        projects=filtered_projects,
+        projects=projects,
         search_query=search_query
     )
 
 
-@app.route('/project/<int:id>')
-def project_detail(id):
-    project = projects.get(id)
+@app.route('/project/<int:project_id>')
+def project_detail(project_id):
+    """Render the project detail page with all reviews."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            p.project_id,
+            p.title,
+            p.description,
+            AVG(r.difficulty) AS difficulty,
+            AVG(r.workload) AS workload,
+            AVG(r.would_recommend) AS would_recommend
+        FROM projects p
+        LEFT JOIN reviews r ON p.project_id = r.project_id
+        WHERE p.project_id = %s
+        GROUP BY p.project_id
+    """, (project_id,))
+
+    project = cursor.fetchone()
 
     if project is None:
+        conn.close()
         return "Project not found", 404
 
-    project_reviews = reviews.get(id, [])
+    cursor.execute("""
+        SELECT
+            r.review_text,
+            r.term,
+            r.difficulty,
+            r.workload,
+            r.would_recommend,
+            s.pseudonym
+        FROM reviews r
+        JOIN students s ON r.student_id = s.student_id
+        WHERE r.project_id = %s
+        ORDER BY r.created_at DESC
+    """, (project_id,))
+
+    reviews = cursor.fetchall()
+    conn.close()
+
     return render_template(
         'project_detail.html',
         project=project,
-        reviews=project_reviews
+        reviews=reviews
     )
+
+
+@app.route('/project/<int:project_id>/submit-review')
+def submit_review(project_id):
+    """Display the review submission page."""
+    return render_template('submit_review.html', project_id=project_id)
 
 
 @app.route('/test-db')
