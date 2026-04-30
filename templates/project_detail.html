@@ -11,10 +11,10 @@
 </a>
 
 <div class="project-card">
-    <p><strong>Workload:</strong> {{ project.workload }}</p>
-    <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
-    <p><strong>Would recommend:</strong> {{ project.would_recommend }}</p>
-    <p><strong>Description:</strong> {{ project.description }}</p>
+    <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
+    <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
+    <p><strong>Would recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
+    <p><strong>Description:</strong> {{ project.description if project.description else 'No description available' }}</p>
 </div>
 
 <h2>Reviews</h2>

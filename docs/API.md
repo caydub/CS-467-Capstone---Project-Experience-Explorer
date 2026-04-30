@@ -31,9 +31,8 @@ Once implemented:
 
 | Method | Route | Description | Template | Status |
 |--------|-------|-------------|----------|--------|
-| GET | `/` | Homepage — project listing with search and filter | `index.html` | 🔲 not built |
-| GET | `/projects` | Browse all projects | `projects.html` | 🔲 not built |
-| GET | `/projects/<id>` | Project detail page — all reviews for a project | `project_detail.html` | 🔲 not built |
+| GET | `/` | Homepage — project listing with search | `index.html` | ✅ built |
+| GET | `/project/<project_id>` | Project detail page — all reviews for a project | `project_detail.html` | ✅ built |
 
 ---
 
