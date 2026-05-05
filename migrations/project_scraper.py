@@ -3,82 +3,125 @@
 import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
-import time
+# pip install pymysql
 import pymysql
+import time
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# database connection
-conn = pymysql.connect(
-    host='127.0.0.1',
-    user='flask_user',
-    password=os.environ.get('DB_PASSWORD'),
-    database='project_explorer_db',
-    cursorclass=pymysql.cursors.DictCursor
-)
-cursor = conn.cursor()
 
-# ------------------------------ Obtaining Project URLs ------------------------------ #
-# base URL for concatenation purposes
-base_url = "https://eecs.engineering.oregonstate.edu/capstone/submission/"
-# contains ALL projects (including ones not in just CS 467)
-browse_projects_url = base_url + "pages/browseProjects.php"
+def main():
+    # connection to sql server
+    connection = pymysql.connect(
+        host='127.0.0.1',
+        user='flask_user',
+        password=os.environ.get('DB_PASSWORD'),
+        database='project_explorer_db',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    cursor = connection.cursor()
 
-# HTTP GET request
-response = requests.get(browse_projects_url)
-# converts response from bitstream into readable text
-html_string = response.text
+    # base URL for concantenation purposes
+    base_url = "https://eecs.engineering.oregonstate.edu/capstone/submission/"
+    # contains ALL projects (including ones not in just CS 467)
+    browse_projects_url = base_url + "pages/browseProjects.php"
 
-# parses the response text
-soup = BeautifulSoup(html_string, "html.parser")
+    # obtains each project's url and puts them in a list
+    project_urls = []
+    project_urls = get_urls(base_url, browse_projects_url)
 
-""" Filtering for CS 467 Projects Only"""
+    # calls scrape function for each project then inserts into the database
+    for project_url in project_urls:
+        title, description, details = scrape(project_url)
+        insert_project(connection, title, description, details, project_url)
+        connection.commit()
+        time.sleep(1)
 
-project_links = []
-project_links.clear()
+    cursor.close()
+    connection.close()
 
-# finds the div class "masonry-brick"/"masonry-brick reqNDA"
-for project in soup.select(".masonry-brick"):
-    filter = project.select_one(".card-body .text-muted")
 
-    if filter:
-        # strip=True removes all excess whitespace (including tab and newlines)
-        text = filter.get_text(strip=True)
+#------------------------------ Project URL Scraper Function ------------------------------#
+# will get each project's url
+def get_urls(base_url, browse_projects_url):
+    # HTTP GET request
+    response = requests.get(browse_projects_url)
+    # converts response from bitstream into a readable text
+    html_string = response.text
+    # parses the response text?
+    soup = BeautifulSoup(html_string, "html.parser")
 
-        if "Courses: CS467" in text:
-            a_tag = project.select_one("a")
+    project_urls = []
 
-            if a_tag:
-                project_links.append(base_url + a_tag.get("href"))
+    """ Filtering for CS 467 Projects Only"""
+    # finds the div class "masonry-brick"/"masontry-brick reqNDA"
+    for project in soup.select(".masonry-brick"):
+        filter = project.select_one(".card-body .text-muted")
+        
+        if filter:
+            # strip=True removes all excess whitespace (including tab and newlines)
+            text = filter.get_text(strip=True)
+            
+            if "Courses: CS467" in text:
+                a_tag = project.select_one("a")
+                
+                if a_tag:
+                    project_urls.append(base_url + a_tag.get("href"))
+                    time.sleep(1)
 
-print(f"Found {len(project_links)} CS467 projects")
-time.sleep(5)
+    return project_urls
+#------------------------------ Project URL Scraper Function ------------------------------#
 
-# ------------------------------ Obtaining Individual Project Details ------------------------------ #
-# loop through each project link
-for project_link in project_links:
-    response = requests.get(project_link)
+
+#------------------------------ Scrape Function ------------------------------#
+# will get the title, objectives, motivations, and details
+def scrape(url):
+    response = requests.get(url)
     html_string = response.text
     soup = BeautifulSoup(html_string, "html.parser")
 
-    filter = soup.select_one(".viewSingleProject")
-    if filter:
-        text = filter.select_one("h1")
-        title = text.get_text(strip=True)
+    # title
+    title_filter = soup.select_one(".viewSingleProject h1")
+    if title_filter:
+        title = title_filter.get_text(strip=True)
+    else:
+        None
 
-        # insert into database, skip if already exists
-        cursor.execute("""
-            INSERT INTO projects (title, url)
-            VALUES (%s, %s)
-            ON DUPLICATE KEY UPDATE title = title
-        """, (title, project_link))
-        conn.commit()
+    # title_desc/summary, div class = .col-lg-12
+    # part of everything under the title/h1 tag
+
+    # description (keep format)
+    description_filter = soup.select_one(".col-md-8.mb-5")
+    if description_filter:
+        description = str(description_filter)
+    else:
+        None
+
+    # details (keep format)
+    details_filter = soup.select_one(".col-md-4.mb-5")
+    if details_filter:
+        details = str(details_filter)
+    else:
+        None
+
+    return title, description, details
+#------------------------------ Scrape Function ------------------------------#
+
+
+#------------------------------ SQL - Insert Project Info Function ------------------------------#
+def insert_project(connection, title, description, details, url):
+    with connection.cursor() as cursor:
+        sql_script = """
+                    insert into projects (title, description, details, url)
+                    values (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE title = title
+                    """
+        cursor.execute(sql_script, (title, description, details, url))
         print(f"Inserted: {title}")
+#------------------------------ SQL - Insert Project Info Function ------------------------------#
 
-    time.sleep(1)
 
-cursor.close()
-conn.close()
-print("Done")
+if __name__ == "__main__":
+    main()
