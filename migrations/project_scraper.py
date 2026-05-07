@@ -21,7 +21,6 @@ def main():
         database='project_explorer_db',
         cursorclass=pymysql.cursors.DictCursor
     )
-    cursor = connection.cursor()
 
     # base URL for concantenation purposes
     base_url = "https://eecs.engineering.oregonstate.edu/capstone/submission/"
@@ -39,11 +38,10 @@ def main():
         connection.commit()
         time.sleep(1)
 
-    cursor.close()
     connection.close()
 
 
-#------------------------------ Project URL Scraper Function ------------------------------#
+# ------------------------------ Project URL Scraper Function ------------------------------ #
 # will get each project's url
 def get_urls(base_url, browse_projects_url):
     # HTTP GET request
@@ -58,24 +56,23 @@ def get_urls(base_url, browse_projects_url):
     """ Filtering for CS 467 Projects Only"""
     # finds the div class "masonry-brick"/"masontry-brick reqNDA"
     for project in soup.select(".masonry-brick"):
-        filter = project.select_one(".card-body .text-muted")
-        
-        if filter:
+        course_filter = project.select_one(".card-body .text-muted")
+
+        if course_filter:
             # strip=True removes all excess whitespace (including tab and newlines)
-            text = filter.get_text(strip=True)
-            
+            text = course_filter.get_text(strip=True)
+
             if "Courses: CS467" in text:
                 a_tag = project.select_one("a")
-                
+
                 if a_tag:
                     project_urls.append(base_url + a_tag.get("href"))
-                    time.sleep(1)
 
     return project_urls
-#------------------------------ Project URL Scraper Function ------------------------------#
+# ------------------------------ Project URL Scraper Function ------------------------------ #
 
 
-#------------------------------ Scrape Function ------------------------------#
+# ------------------------------ Scrape Function ------------------------------ #
 # will get the title, objectives, motivations, and details
 def scrape(url):
     response = requests.get(url)
@@ -87,7 +84,7 @@ def scrape(url):
     if title_filter:
         title = title_filter.get_text(strip=True)
     else:
-        None
+        title = None
 
     # title_desc/summary, div class = .col-lg-12
     # part of everything under the title/h1 tag
@@ -97,20 +94,20 @@ def scrape(url):
     if description_filter:
         description = str(description_filter)
     else:
-        None
+        description = None
 
     # details (keep format)
     details_filter = soup.select_one(".col-md-4.mb-5")
     if details_filter:
         details = str(details_filter)
     else:
-        None
+        details = None
 
     return title, description, details
-#------------------------------ Scrape Function ------------------------------#
+# ------------------------------ Scrape Function ------------------------------ #
 
 
-#------------------------------ SQL - Insert Project Info Function ------------------------------#
+# ------------------------------ SQL - Insert Project Info Function ------------------------------ #
 def insert_project(connection, title, description, details, url):
     with connection.cursor() as cursor:
         sql_script = """
@@ -120,7 +117,7 @@ def insert_project(connection, title, description, details, url):
                     """
         cursor.execute(sql_script, (title, description, details, url))
         print(f"Inserted: {title}")
-#------------------------------ SQL - Insert Project Info Function ------------------------------#
+# ------------------------------ SQL - Insert Project Info Function ------------------------------ #
 
 
 if __name__ == "__main__":
