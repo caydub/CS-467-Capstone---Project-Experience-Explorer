@@ -110,10 +110,21 @@ def scrape(url):
 # ------------------------------ SQL - Insert Project Info Function ------------------------------ #
 def insert_project(connection, title, description, details, url):
     with connection.cursor() as cursor:
+        # title = if(scraper(title) differs from database(title),
+        # [insert] scraper(title), [else] leave database(title))
         sql_script = """
                     insert into projects (title, description, details, url)
                     values (%s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE title = title
+                    on duplicate key update
+                        updated_at = if(
+                            values(title) <> title
+                            or values(description) <> description
+                            or values(details) <> details,
+                            current_timestamp, updated_at),
+                        title = if(values(title) <> title, values(title), title),
+                        description = if(values(description) <> description, values(description), description),
+                        details = if(values(details) <> details, values(details), details),
+                        scraped_at = current_timestamp;
                     """
         cursor.execute(sql_script, (title, description, details, url))
         print(f"Inserted: {title}")
