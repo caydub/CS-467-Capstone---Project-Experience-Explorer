@@ -16,12 +16,7 @@ Routes that modify data (forms, votes, comments) use HTTP POST. Routes that disp
 
 ## Authentication
 
-ONID/CAS authentication is a bonus feature. Until it is implemented, review submission is open.
-
-Once implemented:
-- Unauthenticated users can browse and read reviews
-- Authenticated users (ONID login) can submit reviews, rate helpfulness, and comment
-- No personal data is stored — only a hashed identifier and pseudonym
+ONID/CAS authentication is implemented. Unauthenticated users can browse and read reviews. Authenticated users (ONID login) can submit reviews, rate helpfulness, and comment. No personal data is stored — only a hashed identifier and pseudonym.
 
 ---
 
@@ -40,9 +35,9 @@ Once implemented:
 
 | Method | Route | Description | Template | Status |
 |--------|-------|-------------|----------|--------|
-| GET | `/login` | Redirect to ONID/CAS login | — | 🔲 not built |
-| GET | `/logout` | Clear session and redirect to homepage | — | 🔲 not built |
-| GET | `/auth/callback` | CAS callback — handle login response | — | 🔲 not built |
+| GET | `/login` | Redirect to ONID/CAS login | — | ✅ built |
+| GET | `/logout` | Clear session and redirect to CAS logout | — | ✅ built |
+| GET | `/auth/callback` | CAS callback — handle login response | — | ✅ built |
 
 ---
 
@@ -50,8 +45,8 @@ Once implemented:
 
 | Method | Route | Description | Template | Status |
 |--------|-------|-------------|----------|--------|
-| GET | `/reviews/new/<project_id>` | Review submission form for a project | `review_form.html` | 🔲 not built |
-| POST | `/reviews/new/<project_id>` | Submit a review | — | 🔲 not built |
+| GET | `/project/<project_id>/submit-review` | Review submission form for a project | `submit_review.html` | ✅ built |
+| POST | `/project/<project_id>/submit-review` | Submit a review | — | 🔲 not built |
 
 ---
 
