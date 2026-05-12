@@ -41,13 +41,13 @@ def test_get_or_create_student_hashes_onid():
     mock_cursor.fetchone.return_value = {'student_id': 1, 'pseudonym': 'SwiftElm3'}
 
     with patch('main.get_db_connection', return_value=mock_conn):
-        get_or_create_student('testuser')
+        get_or_create_student('TestUser')  # mixed case
 
-    expected_hash = hashlib.sha256('testuser'.encode()).hexdigest()
+    expected_hash = hashlib.sha256('testuser'.encode()).hexdigest()  # lowercased
     args = mock_cursor.execute.call_args[0]
     assert expected_hash in args[1]
+    assert 'TestUser' not in str(args[1])
     assert 'testuser' not in str(args[1])
-
 
 def test_generate_unique_pseudonym_returns_string():
     mock_cursor = MagicMock()

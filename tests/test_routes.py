@@ -34,6 +34,7 @@ def test_project_detail_returns_200(client, mock_db):
         'description': 'A test project',
         'difficulty': None,
         'workload': None,
+        'team_dynamics': None,
         'would_recommend': None,
     }
     mock_db.fetchall.return_value = []
