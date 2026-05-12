@@ -302,34 +302,54 @@ def submit_review(project_id):
     """Display and process the review submission page."""
     if request.method == 'POST':
         term = request.form.get('term')
-        difficulty = request.form.get('difficulty')
-        workload = request.form.get('workload')
-        team_dynamics = request.form.get('team_dynamics')
-        would_recommend = request.form.get('would_recommend')
+
+        try:
+            difficulty = int(request.form.get('difficulty'))
+            workload = int(request.form.get('workload'))
+            team_dynamics = int(request.form.get('team_dynamics'))
+            would_recommend = int(request.form.get('would_recommend'))
+
+            ratings = [
+                difficulty,
+                workload,
+                team_dynamics,
+                would_recommend
+            ]
+
+            if not all(1 <= rating <= 5 for rating in ratings):
+                return 'Ratings must be between 1 and 5', 400
+
+        except (TypeError, ValueError):
+            return 'Invalid rating value', 400
+
         review_text = request.form.get('review_text')
 
         conn = get_db_connection()
-        cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO reviews
-                (project_id, student_id, term, difficulty, workload,
-                 team_dynamics, would_recommend, review_text)
-            VALUES
-                (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            project_id,
-            session['student_id'],
-            term,
-            difficulty,
-            workload,
-            team_dynamics,
-            would_recommend,
-            review_text
-        ))
+        try:
+            cursor = conn.cursor()
 
-        conn.commit()
-        conn.close()
+            cursor.execute("""
+                INSERT INTO reviews
+                    (project_id, student_id, term, difficulty, workload,
+                     team_dynamics, would_recommend, review_text)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                project_id,
+                session['student_id'],
+                term,
+                difficulty,
+                workload,
+                team_dynamics,
+                would_recommend,
+                review_text
+            ))
+
+            conn.commit()
+
+        finally:
+            conn.close()
 
         return redirect(url_for('project_detail', project_id=project_id))
 

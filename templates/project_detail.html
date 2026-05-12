@@ -11,7 +11,6 @@
     <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
     <p><strong>Team Dynamics:</strong> {{ project.team_dynamics if project.team_dynamics else 'No ratings yet' }}</p>
     <p><strong>Would Recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
-    <p><strong>Description:</strong> {{ project.description if project.description else 'No description available' }}</p>
 </div>
 
 <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
