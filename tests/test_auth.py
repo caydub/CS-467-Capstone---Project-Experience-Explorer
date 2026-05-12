@@ -49,6 +49,7 @@ def test_get_or_create_student_hashes_onid():
     assert 'TestUser' not in str(args[1])
     assert 'testuser' not in str(args[1])
 
+
 def test_generate_unique_pseudonym_returns_string():
     mock_cursor = MagicMock()
     mock_cursor.fetchone.return_value = None
