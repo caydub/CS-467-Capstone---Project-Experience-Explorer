@@ -10,17 +10,17 @@
 
 <section class="form-card">
     <div class="login-prompt">
-        <strong>ONID login required</strong>
-        <p>In the final version, students will need to sign in with ONID before submitting a review.</p>
+        <strong>Signed in as {{ session['pseudonym'] }}</strong>
+        <p>Your review will be posted using your anonymous reviewer pseudonym.</p>
     </div>
 
-    <form action="#" method="post">
+    <form action="{{ url_for('submit_review', project_id=project_id) }}" method="post">
         <label for="term">Term</label>
         <input
             type="text"
             id="term"
             name="term"
-            placeholder="Example: Spring 2025"
+            placeholder="Example: Spring 2026"
             required
         >
 

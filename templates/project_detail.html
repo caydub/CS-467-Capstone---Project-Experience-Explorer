@@ -6,16 +6,16 @@
 
 <h1>{{ project.title }}</h1>
 
-<a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
-    Submit Review
-</a>
-
 <div class="project-card">
     <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
     <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
-    <p><strong>Would recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
-    <p><strong>Description:</strong> {{ project.description if project.description else 'No description available' }}</p>
+    <p><strong>Team Dynamics:</strong> {{ project.team_dynamics if project.team_dynamics else 'No ratings yet' }}</p>
+    <p><strong>Would Recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
 </div>
+
+<a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
+    Submit Review
+</a>
 
 <h2>Reviews</h2>
 
@@ -24,6 +24,10 @@
     <div class="project-card">
         <h3>Reviewer: {{ review.pseudonym }}</h3>
         <p class="project-meta">Term: {{ review.term }}</p>
+        <p><strong>Difficulty:</strong> {{ review.difficulty }}</p>
+        <p><strong>Workload:</strong> {{ review.workload }}</p>
+        <p><strong>Team Dynamics:</strong> {{ review.team_dynamics }}</p>
+        <p><strong>Would Recommend:</strong> {{ review.would_recommend }}</p>
         <p>{{ review.review_text }}</p>
     </div>
     {% endfor %}
