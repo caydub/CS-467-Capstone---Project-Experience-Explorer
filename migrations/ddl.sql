@@ -17,6 +17,7 @@ create table if not exists reviews (
     project_id      int unsigned not null,
     -- may change student_id into onid_hash
     student_id      int unsigned not null,
+		term.           varchar(50),
     body            varchar(4000),
     difficulty      int check (difficulty between 1 and 5),
     workload        int check (workload between 1 and 5),
