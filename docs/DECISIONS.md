@@ -197,5 +197,5 @@ Each entry includes what was decided, why, what alternatives were considered, an
 | # | Question | Status |
 |---|----------|--------|
 | 012 | Local MySQL for dev vs shared Cloud SQL? | Flagged — revisit when schema is ready |
-| 013 | Pseudonym generation — how exactly? Random words, adjective+noun, etc? | TBD |
+| 013 | Pseudonym generation — how exactly? Random words, adjective+noun, etc? | Resolved — adjective+noun+number (e.g. FrostRaven42) |
 | 014 | Capstone portal scraping approach | Henry investigating Wednesday April 16 |
