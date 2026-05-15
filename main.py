@@ -2,10 +2,9 @@ import functools
 import hashlib
 import os
 import random
-import xml.etree.ElementTree as ET
 
 import pymysql
-import requests
+from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
 
@@ -34,9 +33,13 @@ def get_secret(secret_id):
 if IS_PROD:
     db_password = get_secret('db_flask_user_password')
     app.secret_key = get_secret('flask_secret_key')
+    google_client_id = get_secret('google_client_id')
+    google_client_secret = get_secret('google_client_secret')
 else:
     db_password = os.environ.get('DB_PASSWORD')
     app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-not-for-production')
+    google_client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    google_client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 # ------------------------------ Database ------------------------------ #
 
@@ -55,12 +58,18 @@ if IS_PROD:
 else:
     db_config['host'] = '127.0.0.1'
 
-# ------------------------------ CAS Config ------------------------------ #
+# ------------------------------ Google OAuth Config ------------------------------ #
 
-CAS_BASE = 'https://login.oregonstate.edu/cas'
-CAS_LOGIN_URL = f'{CAS_BASE}/login'
-CAS_LOGOUT_URL = f'{CAS_BASE}/logout'
-CAS_VALIDATE_URL = f'{CAS_BASE}/serviceValidate'
+oauth = OAuth(app)
+oauth.register(
+    name='google',
+    client_id=google_client_id,
+    client_secret=google_client_secret,
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
+
+# ------------------------------ Database Helpers ------------------------------ #
 
 
 def get_db_connection():
@@ -100,20 +109,20 @@ def generate_unique_pseudonym(cursor):
             return candidate
 
 
-def get_or_create_student(onid):
-    """Look up a student by hashed ONID. Create a new record with a pseudonym if not found.
+def get_or_create_student(email):
+    """Look up a student by hashed email. Create a new record with a pseudonym if not found.
 
     Returns a dict with student_id and pseudonym.
     """
-    # hash the ONID — we never store the raw username
-    onid_hash = hashlib.sha256(onid.lower().encode()).hexdigest()
+    # hash the email -- we never store the raw address
+    email_hash = hashlib.sha256(email.lower().encode()).hexdigest()
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         'SELECT student_id, pseudonym FROM students WHERE onid_hash = %s',
-        (onid_hash,)
+        (email_hash,)
     )
     student = cursor.fetchone()
 
@@ -121,7 +130,7 @@ def get_or_create_student(onid):
         pseudonym = generate_unique_pseudonym(cursor)
         cursor.execute(
             'INSERT INTO students (onid_hash, pseudonym) VALUES (%s, %s)',
-            (onid_hash, pseudonym)
+            (email_hash, pseudonym)
         )
         conn.commit()
         student = {'student_id': cursor.lastrowid, 'pseudonym': pseudonym}
@@ -131,9 +140,9 @@ def get_or_create_student(onid):
 
 
 def login_required(f):
-    """Decorator — redirect to login if the user is not authenticated.
+    """Decorator -- redirect to login if the user is not authenticated.
 
-    Wrap any route that requires an ONID login with @login_required.
+    Wrap any route that requires an OSU Google login with @login_required.
     Usage:
         @app.route('/some-protected-route')
         @login_required
@@ -152,52 +161,34 @@ def login_required(f):
 
 @app.route('/login')
 def login():
-    """Redirect to the OSU CAS login page."""
-    service_url = url_for('auth_callback', _external=True)
-    return redirect(f'{CAS_LOGIN_URL}?service={service_url}')
+    """Redirect to Google OAuth login."""
+    redirect_uri = url_for('auth_callback', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
 
 
 @app.route('/logout')
 def logout():
-    """Clear the session and redirect to the CAS logout page."""
+    """Clear the session and redirect to homepage."""
     session.clear()
-    service_url = url_for('home', _external=True)
-    return redirect(f'{CAS_LOGOUT_URL}?service={service_url}')
+    return redirect(url_for('home'))
 
 
 @app.route('/auth/callback')
 def auth_callback():
-    """Handle the CAS callback after a successful login.
+    """Handle the Google OAuth callback after a successful login.
 
-    CAS redirects here with a one-time ticket. We validate the ticket
-    against the CAS server, extract the ONID, and create or retrieve
-    the student record before setting the session.
+    Verifies the user has an @oregonstate.edu email, then creates or
+    retrieves their student record and sets the session.
     """
-    ticket = request.args.get('ticket')
-    if not ticket:
-        # no ticket means something went wrong — just go home
-        return redirect(url_for('home'))
+    token = oauth.google.authorize_access_token()
+    user_info = oauth.google.parse_id_token(token, nonce=session.get('nonce'))
+    email = user_info.get('email', '')
 
-    # validate the ticket with the CAS server
-    service_url = url_for('auth_callback', _external=True)
-    response = requests.get(CAS_VALIDATE_URL, params={
-        'ticket': ticket,
-        'service': service_url,
-    })
+    # enforce OSU-only access
+    if not email.endswith('@oregonstate.edu'):
+        return 'Access restricted to OSU students only.', 403
 
-    # parse the XML response from CAS
-    root = ET.fromstring(response.text)
-    ns = {'cas': 'http://www.yale.edu/tp/cas'}
-    success = root.find('cas:authenticationSuccess', ns)
-
-    if success is None:
-        # ticket validation failed — send them back home
-        return redirect(url_for('home'))
-
-    onid = success.find('cas:user', ns).text.strip()
-
-    # look up or create the student record
-    student = get_or_create_student(onid)
+    student = get_or_create_student(email)
 
     session['student_id'] = student['student_id']
     session['pseudonym'] = student['pseudonym']
