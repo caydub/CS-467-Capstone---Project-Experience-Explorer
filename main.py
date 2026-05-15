@@ -9,22 +9,19 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
 
-# Load variables from .env file into the environment (local development only)
 load_dotenv()
 
 app = Flask(__name__)
 
 IS_PROD = os.environ.get('GAE_ENV', '').startswith('standard')
 
+
 # ------------------------------ Secrets ------------------------------ #
 
-
 def get_secret(secret_id):
-    """Fetch a secret value from GCP Secret Manager.
-
-    Used when running on App Engine to avoid storing passwords in code or config files.
-    """
+    """Fetch a secret value from GCP Secret Manager."""
     from google.cloud import secretmanager
+
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/project-experience-explorer/secrets/{secret_id}/versions/latest"
     response = client.access_secret_version(request={"name": name})
@@ -36,7 +33,11 @@ if IS_PROD:
     app.secret_key = get_secret('flask_secret_key')
 else:
     db_password = os.environ.get('DB_PASSWORD')
-    app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-not-for-production')
+    app.secret_key = os.environ.get(
+        'FLASK_SECRET_KEY',
+        'dev-secret-key-not-for-production'
+    )
+
 
 # ------------------------------ Database ------------------------------ #
 
@@ -54,6 +55,7 @@ if IS_PROD:
     )
 else:
     db_config['host'] = '127.0.0.1'
+
 
 # ------------------------------ CAS Config ------------------------------ #
 
@@ -92,20 +94,23 @@ NOUNS = [
 
 
 def generate_unique_pseudonym(cursor):
-    """Generate an adjective+noun+number pseudonym that does not already exist in the students table."""
+    """Generate a unique pseudonym that does not already exist."""
     while True:
-        candidate = random.choice(ADJECTIVES) + random.choice(NOUNS) + str(random.randint(1, 999))
-        cursor.execute('SELECT 1 FROM students WHERE pseudonym = %s', (candidate,))
+        candidate = (
+            random.choice(ADJECTIVES)
+            + random.choice(NOUNS)
+            + str(random.randint(1, 999))
+        )
+        cursor.execute(
+            'SELECT 1 FROM students WHERE pseudonym = %s',
+            (candidate,)
+        )
         if not cursor.fetchone():
             return candidate
 
 
 def get_or_create_student(onid):
-    """Look up a student by hashed ONID. Create a new record with a pseudonym if not found.
-
-    Returns a dict with student_id and pseudonym.
-    """
-    # hash the ONID — we never store the raw username
+    """Look up a student by hashed ONID or create one if not found."""
     onid_hash = hashlib.sha256(onid.lower().encode()).hexdigest()
 
     conn = get_db_connection()
@@ -131,24 +136,17 @@ def get_or_create_student(onid):
 
 
 def login_required(f):
-    """Decorator — redirect to login if the user is not authenticated.
-
-    Wrap any route that requires an ONID login with @login_required.
-    Usage:
-        @app.route('/some-protected-route')
-        @login_required
-        def protected_route():
-            ...
-    """
+    """Redirect to login if the user is not authenticated."""
     @functools.wraps(f)
     def decorated(*args, **kwargs):
         if 'student_id' not in session:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
+
     return decorated
 
-# ------------------------------ Auth Routes ------------------------------ #
 
+# ------------------------------ Auth Routes ------------------------------ #
 
 @app.route('/login')
 def login():
@@ -167,36 +165,25 @@ def logout():
 
 @app.route('/auth/callback')
 def auth_callback():
-    """Handle the CAS callback after a successful login.
-
-    CAS redirects here with a one-time ticket. We validate the ticket
-    against the CAS server, extract the ONID, and create or retrieve
-    the student record before setting the session.
-    """
+    """Handle the CAS callback after a successful login."""
     ticket = request.args.get('ticket')
     if not ticket:
-        # no ticket means something went wrong — just go home
         return redirect(url_for('home'))
 
-    # validate the ticket with the CAS server
     service_url = url_for('auth_callback', _external=True)
     response = requests.get(CAS_VALIDATE_URL, params={
         'ticket': ticket,
         'service': service_url,
     })
 
-    # parse the XML response from CAS
     root = ET.fromstring(response.text)
     ns = {'cas': 'http://www.yale.edu/tp/cas'}
     success = root.find('cas:authenticationSuccess', ns)
 
     if success is None:
-        # ticket validation failed — send them back home
         return redirect(url_for('home'))
 
     onid = success.find('cas:user', ns).text.strip()
-
-    # look up or create the student record
     student = get_or_create_student(onid)
 
     session['student_id'] = student['student_id']
@@ -204,8 +191,8 @@ def auth_callback():
 
     return redirect(url_for('home'))
 
-# ------------------------------ Public Routes ------------------------------ #
 
+# ------------------------------ Public Routes ------------------------------ #
 
 @app.route('/')
 def home():
@@ -229,10 +216,21 @@ def home():
     """
 
     if search_query:
-        cursor.execute(base_query + 'WHERE p.title LIKE %s GROUP BY p.project_id ORDER BY p.title',
-                       (f'%{search_query}%',))
+        cursor.execute(
+            base_query + """
+                WHERE p.title LIKE %s
+                GROUP BY p.project_id
+                ORDER BY p.title
+            """,
+            (f'%{search_query}%',)
+        )
     else:
-        cursor.execute(base_query + 'GROUP BY p.project_id ORDER BY p.title')
+        cursor.execute(
+            base_query + """
+                GROUP BY p.project_id
+                ORDER BY p.title
+            """
+        )
 
     projects = cursor.fetchall()
     conn.close()
@@ -246,7 +244,7 @@ def home():
 
 @app.route('/project/<int:project_id>')
 def project_detail(project_id):
-    """Render the project detail page with all reviews."""
+    """Render the project detail page with all reviews and comments."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -273,6 +271,7 @@ def project_detail(project_id):
 
     cursor.execute("""
         SELECT
+            r.review_id,
             r.review_text,
             r.term,
             r.difficulty,
@@ -287,12 +286,30 @@ def project_detail(project_id):
     """, (project_id,))
 
     reviews = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            c.comment_id,
+            c.review_id,
+            c.comment_text,
+            c.created_at,
+            s.pseudonym
+        FROM comments c
+        JOIN students s ON c.student_id = s.student_id
+        JOIN reviews r ON c.review_id = r.review_id
+        WHERE r.project_id = %s
+        ORDER BY c.created_at ASC
+    """, (project_id,))
+
+    comments = cursor.fetchall()
+
     conn.close()
 
     return render_template(
         'project_detail.html',
         project=project,
-        reviews=reviews
+        reviews=reviews,
+        comments=comments
     )
 
 
@@ -355,15 +372,46 @@ def submit_review(project_id):
 
     return render_template('submit_review.html', project_id=project_id)
 
-# ------------------------------ Dev/Debug Routes ------------------------------ #
 
+@app.route('/review/<int:review_id>/comment', methods=['POST'])
+@login_required
+def submit_comment(review_id):
+    """Process a new comment submitted on a review."""
+    comment_text = request.form.get('comment_text', '').strip()
+    project_id = request.form.get('project_id')
+
+    if not comment_text:
+        return 'Comment cannot be empty', 400
+
+    conn = get_db_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO comments
+                (review_id, student_id, comment_text)
+            VALUES
+                (%s, %s, %s)
+        """, (
+            review_id,
+            session['student_id'],
+            comment_text
+        ))
+
+        conn.commit()
+
+    finally:
+        conn.close()
+
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+# ------------------------------ Dev/Debug Routes ------------------------------ #
 
 @app.route('/test-db')
 def test_db():
-    """Temporary route to verify the database connection is working.
-
-    Remove this before final deployment.
-    """
+    """Temporary route to verify the database connection is working."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -377,3 +425,4 @@ def test_db():
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
+
