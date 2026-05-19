@@ -29,6 +29,27 @@
         <p><strong>Team Dynamics:</strong> {{ review.team_dynamics }}</p>
         <p><strong>Would Recommend:</strong> {{ review.would_recommend }}</p>
         <p>{{ review.review_text }}</p>
+
+        <h4>Comments</h4>
+
+        {% for comment in comments %}
+            {% if comment.review_id == review.review_id %}
+                <div class="comment-card">
+                    <p><strong>{{ comment.pseudonym }}</strong></p>
+                    <p>{{ comment.comment_text }}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {% if session.student_id %}
+            <form method="POST" action="{{ url_for('submit_comment', review_id=review.review_id) }}">
+                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                <textarea name="comment_text" rows="3" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="button">Post Comment</button>
+            </form>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Log in</a> to comment.</p>
+        {% endif %}
     </div>
     {% endfor %}
 {% else %}
