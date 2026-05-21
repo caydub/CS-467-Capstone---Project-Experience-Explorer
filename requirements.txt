@@ -1,3 +1,5 @@
+Authlib==1.7.2
+beautifulsoup4==4.14.3
 blinker==1.9.0
 certifi==2026.2.25
 cffi==2.0.0
@@ -14,10 +16,14 @@ grpc-google-iam-v1==0.14.4
 grpcio==1.80.0
 grpcio-status==1.80.0
 idna==3.11
+iniconfig==2.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
+joserfc==1.6.5
 MarkupSafe==3.0.3
 mccabe==0.7.0
+packaging==26.2
+pluggy==1.6.0
 proto-plus==1.27.2
 protobuf==6.33.6
 pyasn1==0.6.3
@@ -25,9 +31,12 @@ pyasn1_modules==0.4.2
 pycodestyle==2.14.0
 pycparser==3.0
 pyflakes==3.4.0
+Pygments==2.20.0
 PyMySQL==1.1.2
+pytest==9.0.3
 python-dotenv==1.2.2
 requests==2.33.1
+soupsieve==2.8.3
 typing_extensions==4.15.0
 urllib3==2.6.3
 Werkzeug==3.1.8
