@@ -2,6 +2,7 @@ import functools
 import hashlib
 import os
 import random
+from datetime import datetime
 
 import pymysql
 from authlib.integrations.flask_client import OAuth
@@ -193,6 +194,20 @@ def auth_callback():
     return redirect(url_for('home'))
 
 
+# ------------------------------ Term Dropdown Helper ------------------------------ #
+
+def generate_terms(years_back=5):
+    current_year = datetime.now().year
+    terms = []
+    quarter_terms = ["Fall", "Winter", "Spring", "Summer"]
+
+    for year in range(current_year, current_year-years_back-1, -1):
+        for term in quarter_terms:
+            terms.append(f"{term} {year}")
+
+    return terms
+
+
 # ------------------------------ Public Routes ------------------------------ #
 
 @app.route('/')
@@ -318,6 +333,8 @@ def project_detail(project_id):
 @login_required
 def submit_review(project_id):
     """Display and process the review submission page."""
+    terms = generate_terms()
+
     if request.method == 'POST':
         term = request.form.get('term')
 
@@ -371,7 +388,7 @@ def submit_review(project_id):
 
         return redirect(url_for('project_detail', project_id=project_id))
 
-    return render_template('submit_review.html', project_id=project_id)
+    return render_template('submit_review.html', project_id=project_id, terms=terms)
 
 
 @app.route('/review/<int:review_id>/comment', methods=['POST'])
