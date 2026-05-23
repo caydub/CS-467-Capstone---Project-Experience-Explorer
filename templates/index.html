@@ -11,7 +11,30 @@
 
 <form class="search-bar" method="GET" action="/">
     <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
-    <button type="submit" class="button">Search</button>
+
+    <select name="sort">
+        <option value="title" {% if sort_option == 'title' %}selected{% endif %}>
+            Alphabetical
+        </option>
+
+        <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>
+            Most Reviews
+        </option>
+
+        <option value="highest_recommendation" {% if sort_option == 'highest_recommendation' %}selected{% endif %}>
+            Highest Recommendation
+        </option>
+
+        <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>
+            Highest Difficulty
+        </option>
+
+        <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>
+            Highest Workload
+        </option>
+    </select>
+
+    <button type="submit" class="button">Apply</button>
 </form>
 
 {% if projects %}

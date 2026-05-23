@@ -199,6 +199,7 @@ def auth_callback():
 def home():
     """Render the project listing page with optional search filtering."""
     search_query = request.args.get('search', '').strip()
+    sort_option = request.args.get('sort', 'title')
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -216,21 +217,29 @@ def home():
         LEFT JOIN reviews r ON p.project_id = r.project_id
     """
 
+    sort_options = {
+        'title': 'p.title ASC',
+        'most_reviews': 'review_count DESC, p.title ASC',
+        'highest_recommendation': 'would_recommend DESC, p.title ASC',
+        'highest_difficulty': 'difficulty DESC, p.title ASC',
+        'highest_workload': 'workload DESC, p.title ASC'
+    }
+
+    order_by = sort_options.get(sort_option, sort_options['title'])
+
     if search_query:
         cursor.execute(
             base_query + """
                 WHERE p.title LIKE %s
                 GROUP BY p.project_id
-                ORDER BY p.title
-            """,
+                ORDER BY """ + order_by,
             (f'%{search_query}%',)
         )
     else:
         cursor.execute(
             base_query + """
                 GROUP BY p.project_id
-                ORDER BY p.title
-            """
+                ORDER BY """ + order_by
         )
 
     projects = cursor.fetchall()
@@ -239,7 +248,8 @@ def home():
     return render_template(
         'index.html',
         projects=projects,
-        search_query=search_query
+        search_query=search_query,
+        sort_option=sort_option
     )
 
 
