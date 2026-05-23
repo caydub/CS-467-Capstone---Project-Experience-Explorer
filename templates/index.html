@@ -9,32 +9,78 @@
     <p>Explore and read reviews of Capstone Projects from past students.</p>
 </div>
 
-<form class="search-bar" method="GET" action="/">
-    <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
+<form class="search-form" method="GET" action="/">
+    <div class="search-bar">
+        <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
 
-    <select name="sort">
-        <option value="title" {% if sort_option == 'title' %}selected{% endif %}>
-            Alphabetical
-        </option>
+        <select name="sort">
+            <option value="title" {% if sort_option == 'title' %}selected{% endif %}>
+                Alphabetical
+            </option>
+            <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>
+                Most Reviews
+            </option>
+            <option value="avg_score" {% if sort_option == 'avg_score' %}selected{% endif %}>
+                Highest Avg Score
+            </option>
+            <option value="highest_recommendation" {% if sort_option == 'highest_recommendation' %}selected{% endif %}>
+                Highest Recommendation
+            </option>
+            <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>
+                Highest Difficulty
+            </option>
+            <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>
+                Highest Workload
+            </option>
+        </select>
 
-        <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>
-            Most Reviews
-        </option>
+        <button type="submit" class="button">Apply</button>
+    </div>
 
-        <option value="highest_recommendation" {% if sort_option == 'highest_recommendation' %}selected{% endif %}>
-            Highest Recommendation
-        </option>
+    <div class="filter-bar">
+        <span class="filter-label">Filters:</span>
 
-        <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>
-            Highest Difficulty
-        </option>
+        <label>
+            Min Difficulty
+            <select name="min_difficulty">
+                <option value="">Any</option>
+                {% for val in [2, 3, 4, 5] %}
+                <option value="{{ val }}" {% if filter_min_difficulty == val %}selected{% endif %}>
+                    &ge; {{ val }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-        <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>
-            Highest Workload
-        </option>
-    </select>
+        <label>
+            Min Workload
+            <select name="min_workload">
+                <option value="">Any</option>
+                {% for val in [2, 3, 4, 5] %}
+                <option value="{{ val }}" {% if filter_min_workload == val %}selected{% endif %}>
+                    &ge; {{ val }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-    <button type="submit" class="button">Apply</button>
+        <label>
+            Min Recommendation
+            <select name="min_recommend">
+                <option value="">Any</option>
+                {% for val in [2, 3, 4, 5] %}
+                <option value="{{ val }}" {% if filter_min_recommend == val %}selected{% endif %}>
+                    &ge; {{ val }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="has_reviews" value="1" {% if filter_has_reviews %}checked{% endif %}>
+            Has Reviews
+        </label>
+    </div>
 </form>
 
 {% if projects %}
@@ -43,22 +89,40 @@
 
         <h3>{{ project.title }}</h3>
 
-        <!-- Ratings / summary -->
         <div class="project-summary">
-            <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
+            <p><strong>Difficulty:</strong>
+                {% if project.avg_difficulty %}{{ project.avg_difficulty | round(1) }}{% else %}No ratings yet{% endif %}
+            </p>
 
             <div class="rating-bar">
-                <div class="rating-fill" style="width: {{ (project.difficulty * 20) if project.difficulty else 0 }}%;"></div>
+                <div class="rating-fill"
+                     style="width: {{ (project.avg_difficulty * 20) if project.avg_difficulty else 0 }}%;"></div>
             </div>
 
-            <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
-            <p><strong>Would recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
+            <p><strong>Workload:</strong>
+                {% if project.avg_workload %}{{ project.avg_workload | round(1) }}{% else %}No ratings yet{% endif %}
+            </p>
+
+            <div class="rating-bar">
+                <div class="rating-fill"
+                     style="width: {{ (project.avg_workload * 20) if project.avg_workload else 0 }}%;"></div>
+            </div>
+
+            <p><strong>Recommendation:</strong>
+                {% if project.avg_recommend %}{{ project.avg_recommend | round(1) }}{% else %}No ratings yet{% endif %}
+            </p>
+
+            <div class="rating-bar">
+                <div class="rating-fill"
+                     style="width: {{ (project.avg_recommend * 20) if project.avg_recommend else 0 }}%;"></div>
+            </div>
         </div>
 
-        <!-- Review info -->
         <div class="project-reviews">
             <p><strong>Reviews:</strong> {{ project.review_count }}</p>
-            <p><strong>Top review:</strong> {{ project.top_snippet if project.top_snippet else 'No reviews yet' }}</p>
+            <p><strong>Top review:</strong>
+                {{ project.top_snippet if project.top_snippet else 'No reviews yet' }}
+            </p>
         </div>
 
         <a href="/project/{{ project.project_id }}" class="button">View Details</a>
@@ -67,7 +131,7 @@
     {% endfor %}
 {% else %}
     <div class="project-card">
-        <p>No projects found. Please search again.</p>
+        <p>No projects found. Try adjusting your search or filters.</p>
     </div>
 {% endif %}
 

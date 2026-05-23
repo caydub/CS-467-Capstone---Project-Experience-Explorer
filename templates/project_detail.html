@@ -7,10 +7,18 @@
 <h1>{{ project.title }}</h1>
 
 <div class="project-card">
-    <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
-    <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
-    <p><strong>Team Dynamics:</strong> {{ project.team_dynamics if project.team_dynamics else 'No ratings yet' }}</p>
-    <p><strong>Would Recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
+    <p><strong>Difficulty:</strong>
+        {{ project.difficulty | round(1) if project.difficulty else 'No ratings yet' }}
+    </p>
+    <p><strong>Workload:</strong>
+        {{ project.workload | round(1) if project.workload else 'No ratings yet' }}
+    </p>
+    <p><strong>Team Dynamics:</strong>
+        {{ project.team_dynamics | round(1) if project.team_dynamics else 'No ratings yet' }}
+    </p>
+    <p><strong>Would Recommend:</strong>
+        {{ project.would_recommend | round(1) if project.would_recommend else 'No ratings yet' }}
+    </p>
 </div>
 
 <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
@@ -30,6 +38,39 @@
         <p><strong>Would Recommend:</strong> {{ review.would_recommend }}</p>
         <p>{{ review.review_text }}</p>
 
+        <!-- Helpfulness voting -->
+        <div class="vote-row">
+            {% if session.student_id %}
+                {% set my_vote = user_votes.get(review.review_id) %}
+                <form method="POST"
+                      action="{{ url_for('vote_review', review_id=review.review_id) }}"
+                      class="vote-form">
+                    <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                    <input type="hidden" name="value" value="1">
+                    <button type="submit"
+                            class="vote-btn {% if my_vote == 1 %}active{% endif %}">
+                        Helpful ({{ review.helpful_count }})
+                    </button>
+                </form>
+                <form method="POST"
+                      action="{{ url_for('vote_review', review_id=review.review_id) }}"
+                      class="vote-form">
+                    <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                    <input type="hidden" name="value" value="-1">
+                    <button type="submit"
+                            class="vote-btn {% if my_vote == -1 %}active{% endif %}">
+                        Not Helpful ({{ review.not_helpful_count }})
+                    </button>
+                </form>
+            {% else %}
+                <span class="vote-readonly">
+                    {{ review.helpful_count }} helpful &middot;
+                    {{ review.not_helpful_count }} not helpful &middot;
+                    <a href="{{ url_for('login') }}">Log in</a> to vote
+                </span>
+            {% endif %}
+        </div>
+
         <h4>Comments</h4>
 
         {% for comment in comments %}
@@ -44,7 +85,8 @@
         {% if session.student_id %}
             <form method="POST" action="{{ url_for('submit_comment', review_id=review.review_id) }}">
                 <input type="hidden" name="project_id" value="{{ project.project_id }}">
-                <textarea name="comment_text" rows="3" placeholder="Add a comment..." required></textarea>
+                <textarea name="comment_text" rows="3"
+                          placeholder="Add a comment..." required></textarea>
                 <button type="submit" class="button">Post Comment</button>
             </form>
         {% else %}
