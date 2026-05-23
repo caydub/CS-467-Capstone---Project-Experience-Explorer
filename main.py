@@ -255,6 +255,7 @@ def home():
         SELECT
             p.project_id,
             p.title,
+            p.description,
             COUNT(r.review_id)                                                  AS review_count,
             AVG(r.difficulty)                                                   AS avg_difficulty,
             AVG(r.workload)                                                     AS avg_workload,
