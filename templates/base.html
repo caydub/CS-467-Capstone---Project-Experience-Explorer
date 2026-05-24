@@ -4,16 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Project Experience Explorer{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
 </head>
 <body>
 
     <nav class="navbar">
         <div class="nav-container">
-            <h2 class="logo">Project Experience Explorer</h2>
+            <h2 class="logo">🎓 Project Experience Explorer</h2>
             <div class="nav-links">
-                <a href="/">Home</a>
                 <a href="/">Browse Projects</a>
+                {% if session.student_id %}
+                    <span class="nav-pseudonym">{{ session.pseudonym }}</span>
+                    <a href="{{ url_for('logout') }}">Log out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Log in</a>
+                {% endif %}
             </div>
         </div>
     </nav>
