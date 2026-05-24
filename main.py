@@ -333,7 +333,6 @@ def project_detail(project_id):
 @login_required
 def submit_review(project_id):
     """Display and process the review submission page."""
-    terms = generate_terms()
 
     if request.method == 'POST':
         term = request.form.get('term')
@@ -387,7 +386,8 @@ def submit_review(project_id):
             conn.close()
 
         return redirect(url_for('project_detail', project_id=project_id))
-
+    
+    terms = generate_terms()
     return render_template('submit_review.html', project_id=project_id, terms=terms)
 
 

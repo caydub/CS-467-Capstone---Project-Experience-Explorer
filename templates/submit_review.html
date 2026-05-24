@@ -16,7 +16,7 @@
 
     <form action="{{ url_for('submit_review', project_id=project_id) }}" method="post">
         <label for="term">Term</label>
-        <select>
+        <select id="term" name="term" required>
             {% for t in terms %}
                 <option value="{{ t }}">{{ t }}</option>
             {% endfor %}
