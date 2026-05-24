@@ -197,51 +197,83 @@ def auth_callback():
 
 @app.route('/')
 def home():
-    """Render the project listing page with optional search filtering."""
+    """Render the project listing page with optional search, filter, and sort."""
     search_query = request.args.get('search', '').strip()
     sort_option = request.args.get('sort', 'title')
-    conn = get_db_connection()
-    cursor = conn.cursor()
 
-    base_query = """
-        SELECT
-            p.project_id,
-            p.title,
-            p.description,
-            COUNT(r.review_id) AS review_count,
-            AVG(r.difficulty) AS difficulty,
-            AVG(r.workload) AS workload,
-            AVG(r.would_recommend) AS would_recommend,
-            MAX(r.review_text) AS top_snippet
-        FROM projects p
-        LEFT JOIN reviews r ON p.project_id = r.project_id
-    """
+    def parse_rating_filter(param):
+        """Return int 1-5 if the query param is a valid rating, else None."""
+        try:
+            val = int(request.args.get(param, 0))
+            return val if 1 <= val <= 5 else None
+        except (ValueError, TypeError):
+            return None
+
+    filter_min_difficulty = parse_rating_filter('min_difficulty')
+    filter_min_workload = parse_rating_filter('min_workload')
+    filter_min_recommend = parse_rating_filter('min_recommend')
+    filter_has_reviews = request.args.get('has_reviews') == '1'
 
     sort_options = {
         'title': 'p.title ASC',
         'most_reviews': 'review_count DESC, p.title ASC',
-        'highest_recommendation': 'would_recommend DESC, p.title ASC',
-        'highest_difficulty': 'difficulty DESC, p.title ASC',
-        'highest_workload': 'workload DESC, p.title ASC'
+        'avg_score': 'avg_score DESC, p.title ASC',
+        'highest_recommendation': 'avg_recommend DESC, p.title ASC',
+        'highest_difficulty': 'avg_difficulty DESC, p.title ASC',
+        'highest_workload': 'avg_workload DESC, p.title ASC',
     }
-
     order_by = sort_options.get(sort_option, sort_options['title'])
 
-    if search_query:
-        cursor.execute(
-            base_query + """
-                WHERE p.title LIKE %s
-                GROUP BY p.project_id
-                ORDER BY """ + order_by,
-            (f'%{search_query}%',)
-        )
-    else:
-        cursor.execute(
-            base_query + """
-                GROUP BY p.project_id
-                ORDER BY """ + order_by
-        )
+    where_clauses = []
+    where_params = []
+    having_clauses = []
+    having_params = []
 
+    if search_query:
+        where_clauses.append('p.title LIKE %s')
+        where_params.append(f'%{search_query}%')
+
+    if filter_min_difficulty:
+        having_clauses.append('AVG(r.difficulty) >= %s')
+        having_params.append(filter_min_difficulty)
+
+    if filter_min_workload:
+        having_clauses.append('AVG(r.workload) >= %s')
+        having_params.append(filter_min_workload)
+
+    if filter_min_recommend:
+        having_clauses.append('AVG(r.would_recommend) >= %s')
+        having_params.append(filter_min_recommend)
+
+    if filter_has_reviews:
+        having_clauses.append('COUNT(r.review_id) > 0')
+
+    where_sql = ('WHERE ' + ' AND '.join(where_clauses)) if where_clauses else ''
+    having_sql = ('HAVING ' + ' AND '.join(having_clauses)) if having_clauses else ''
+
+    query = f"""
+        SELECT
+            p.project_id,
+            p.title,
+            p.description,
+            COUNT(r.review_id)                                                  AS review_count,
+            AVG(r.difficulty)                                                   AS avg_difficulty,
+            AVG(r.workload)                                                     AS avg_workload,
+            AVG(r.would_recommend)                                              AS avg_recommend,
+            (AVG(r.difficulty) + AVG(r.workload)
+                + AVG(r.team_dynamics) + AVG(r.would_recommend)) / 4.0         AS avg_score,
+            MAX(r.review_text)                                                  AS top_snippet
+        FROM projects p
+        LEFT JOIN reviews r ON p.project_id = r.project_id
+        {where_sql}
+        GROUP BY p.project_id
+        {having_sql}
+        ORDER BY {order_by}
+    """
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, where_params + having_params)
     projects = cursor.fetchall()
     conn.close()
 
@@ -249,7 +281,11 @@ def home():
         'index.html',
         projects=projects,
         search_query=search_query,
-        sort_option=sort_option
+        sort_option=sort_option,
+        filter_min_difficulty=filter_min_difficulty,
+        filter_min_workload=filter_min_workload,
+        filter_min_recommend=filter_min_recommend,
+        filter_has_reviews=filter_has_reviews,
     )
 
 
@@ -289,7 +325,11 @@ def project_detail(project_id):
             r.workload,
             r.team_dynamics,
             r.would_recommend,
-            s.pseudonym
+            s.pseudonym,
+            (SELECT COUNT(*) FROM helpfulness h
+             WHERE h.review_id = r.review_id AND h.value = 1)  AS helpful_count,
+            (SELECT COUNT(*) FROM helpfulness h
+             WHERE h.review_id = r.review_id AND h.value = -1) AS not_helpful_count
         FROM reviews r
         JOIN students s ON r.student_id = s.student_id
         WHERE r.project_id = %s
@@ -297,6 +337,18 @@ def project_detail(project_id):
     """, (project_id,))
 
     reviews = cursor.fetchall()
+
+    # build a {review_id: vote_value} map for the logged-in user
+    user_votes = {}
+    if 'student_id' in session and reviews:
+        review_ids = [r['review_id'] for r in reviews]
+        placeholders = ', '.join(['%s'] * len(review_ids))
+        cursor.execute(
+            f'SELECT review_id, value FROM helpfulness'
+            f' WHERE student_id = %s AND review_id IN ({placeholders})',
+            [session['student_id']] + review_ids
+        )
+        user_votes = {row['review_id']: row['value'] for row in cursor.fetchall()}
 
     cursor.execute("""
         SELECT
@@ -320,7 +372,8 @@ def project_detail(project_id):
         'project_detail.html',
         project=project,
         reviews=reviews,
-        comments=comments
+        comments=comments,
+        user_votes=user_votes,
     )
 
 
@@ -412,6 +465,57 @@ def submit_comment(review_id):
 
         conn.commit()
 
+    finally:
+        conn.close()
+
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/review/<int:review_id>/vote', methods=['POST'])
+@login_required
+def vote_review(review_id):
+    """Toggle a helpful (1) or not-helpful (-1) vote on a review.
+
+    Submitting the same vote twice removes it; submitting the opposite flips it.
+    """
+    raw_value = request.form.get('value')
+    project_id = request.form.get('project_id')
+
+    if raw_value not in ('1', '-1'):
+        return 'Invalid vote value', 400
+
+    value = int(raw_value)
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT value FROM helpfulness WHERE review_id = %s AND student_id = %s',
+            (review_id, student_id)
+        )
+        existing = cursor.fetchone()
+
+        if existing:
+            if existing['value'] == value:
+                # same vote — remove it (toggle off)
+                cursor.execute(
+                    'DELETE FROM helpfulness WHERE review_id = %s AND student_id = %s',
+                    (review_id, student_id)
+                )
+            else:
+                # opposite vote — flip it
+                cursor.execute(
+                    'UPDATE helpfulness SET value = %s WHERE review_id = %s AND student_id = %s',
+                    (value, review_id, student_id)
+                )
+        else:
+            cursor.execute(
+                'INSERT INTO helpfulness (review_id, student_id, value) VALUES (%s, %s, %s)',
+                (review_id, student_id, value)
+            )
+
+        conn.commit()
     finally:
         conn.close()
 
