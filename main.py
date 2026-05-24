@@ -290,7 +290,7 @@ def format_description(text):
         return Markup('\n'.join(buf))
 
     # Legacy plain-text fallback: one <p> per line, bold known section headers.
-    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
     html = []
     for line in lines:
         line = re.sub(r'^>>\s*', '', line).strip()
