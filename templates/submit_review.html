@@ -70,8 +70,10 @@
             name="review_text"
             rows="6"
             placeholder="Describe your experience with this project."
+            maxlength="4000"
             required
         ></textarea>
+        <span id="char-count" class="char-count">0 / 4000</span>
 
         <button type="submit" class="button">Submit Review</button>
     </form>
@@ -82,4 +84,12 @@
         </a>
     </p>
 </section>
+
+<script>
+    var textarea = document.getElementById('review_text');
+    var counter = document.getElementById('char-count');
+    textarea.addEventListener('input', function () {
+        counter.textContent = this.value.length + ' / 4000';
+    });
+</script>
 {% endblock %}
