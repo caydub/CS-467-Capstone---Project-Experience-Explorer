@@ -196,14 +196,42 @@ def auth_callback():
 
 # ------------------------------ Term Dropdown Helper ------------------------------ #
 
-def generate_terms(years_back=5):
+def generate_terms(years_back: int = 5) -> list[str]:
+    """
+    Creates a list of academic quarter terms.
+
+    Returns:
+        list[str]: A list of terms such as "Spring 2026", "Winter 2026", etc.
+    """
+    # current year and month
     current_year = datetime.now().year
+    current_month = datetime.now().month
+
     terms = []
     quarter_terms = ["Fall", "Winter", "Spring", "Summer"]
 
-    for year in range(current_year, current_year-years_back-1, -1):
-        for term in quarter_terms:
-            terms.append(f"{term} {year}")
+    # determining current quarter: Fall, Winter, Spring, Summer
+    if current_month >= 9 and current_month <= 12:
+        start_index = 0
+    elif current_month >= 1 and current_month <= 3:
+        start_index = 1
+    elif current_month >= 4 and current_month <= 6:
+        start_index = 2
+    else:
+        start_index = 3
+
+    # initialize year and quarter to then be used in for-loop
+    year = current_year
+    quarter = start_index
+
+    # generate/append terms while going backwards
+    for _ in range(years_back * 4):
+        terms.append(f"{quarter_terms[quarter]} {year}")
+
+        quarter -= 1
+        if quarter < 0:
+            quarter = 3
+            year -= 1
 
     return terms
 
@@ -386,7 +414,7 @@ def submit_review(project_id):
             conn.close()
 
         return redirect(url_for('project_detail', project_id=project_id))
-    
+
     terms = generate_terms()
     return render_template('submit_review.html', project_id=project_id, terms=terms)
 
