@@ -1,41 +1,152 @@
 {% extends "base.html" %}
 
-{% block title %}Project Details{% endblock %}
+{% block title %}{{ project.title }} — Project Experience Explorer{% endblock %}
+
+{% block head %}
+<meta name="description" content="{{ project.description | replace('\n', ' ') | truncate(160, True, '…') if project.description else project.title + ' — capstone project reviews on Project Experience Explorer' }}">
+{% endblock %}
 
 {% block content %}
 
+<nav class="breadcrumb">
+    <a href="{{ url_for('home') }}">Home</a>
+    <span class="crumb-sep">›</span>
+    <span>{{ project.title }}</span>
+</nav>
+
 <h1>{{ project.title }}</h1>
 
+{% if project.image_url %}
+<img src="{{ project.image_url }}" alt="{{ project.title }}" class="project-image">
+{% endif %}
+
+{% if project.description %}
+<div class="project-description">{{ project.description | format_description }}</div>
+{% endif %}
+
+{% if project.details %}
+<div class="project-details-meta">
+    {{ project.details | format_description }}
+</div>
+{% endif %}
+
 <div class="project-card">
-    <p><strong>Difficulty:</strong> {{ project.difficulty if project.difficulty else 'No ratings yet' }}</p>
-    <p><strong>Workload:</strong> {{ project.workload if project.workload else 'No ratings yet' }}</p>
-    <p><strong>Team Dynamics:</strong> {{ project.team_dynamics if project.team_dynamics else 'No ratings yet' }}</p>
-    <p><strong>Would Recommend:</strong> {{ project.would_recommend if project.would_recommend else 'No ratings yet' }}</p>
+    <div class="ratings-grid">
+        {% set ratings = [
+            ('Difficulty',     project.difficulty),
+            ('Workload',       project.workload),
+            ('Team Dynamics',  project.team_dynamics),
+            ('Would Recommend', project.would_recommend)
+        ] %}
+        {% for label, value in ratings %}
+        <div class="rating-row">
+            <span class="rating-label">{{ label }}</span>
+            {% if value %}
+                {% set color = rating_color(value) %}
+                <div class="rating-bar">
+                    <div class="rating-fill"
+                         style="--target-width: {{ (value * 20)|int }}%; background-color: {{ color }};"></div>
+                </div>
+                <span class="rating-value" style="color: {{ color }};">{{ value | round(1) }} / 5</span>
+            {% else %}
+                <div class="rating-bar"></div>
+                <span class="rating-none">—</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
     Submit Review
 </a>
 
-<h2>Reviews</h2>
+<div class="reviews-header">
+    <h2>Reviews ({{ reviews | length }})</h2>
+    <div class="sort-toggle">
+        <a href="{{ url_for('project_detail', project_id=project.project_id, review_sort='helpful') }}"
+           class="sort-btn {% if review_sort == 'helpful' %}active{% endif %}">Most Helpful</a>
+        <a href="{{ url_for('project_detail', project_id=project.project_id, review_sort='recent') }}"
+           class="sort-btn {% if review_sort == 'recent' %}active{% endif %}">Most Recent</a>
+    </div>
+</div>
 
 {% if reviews %}
     {% for review in reviews %}
     <div class="project-card">
-        <h3>Reviewer: {{ review.pseudonym }}</h3>
-        <p class="project-meta">Term: {{ review.term }}</p>
-        <p><strong>Difficulty:</strong> {{ review.difficulty }}</p>
-        <p><strong>Workload:</strong> {{ review.workload }}</p>
-        <p><strong>Team Dynamics:</strong> {{ review.team_dynamics }}</p>
-        <p><strong>Would Recommend:</strong> {{ review.would_recommend }}</p>
-        <p>{{ review.review_text }}</p>
+
+        <div class="review-meta">
+            <span class="avatar-badge" style="background-color: {{ badge_color(review.pseudonym) }};">
+                {{ review.pseudonym[0] | upper }}
+            </span>
+            <div>
+                <strong>{{ review.pseudonym }}</strong>
+                <span class="project-meta">· {{ review.term }}</span>
+            </div>
+        </div>
+
+        <div class="ratings-grid ratings-grid--compact">
+            {% set review_ratings = [
+                ('Difficulty',     review.difficulty),
+                ('Workload',       review.workload),
+                ('Team Dynamics',  review.team_dynamics),
+                ('Would Recommend', review.would_recommend)
+            ] %}
+            {% for label, value in review_ratings %}
+            <div class="rating-row">
+                <span class="rating-label">{{ label }}</span>
+                {% set color = rating_color(value) %}
+                <div class="rating-bar">
+                    <div class="rating-fill"
+                         style="--target-width: {{ (value * 20)|int }}%; background-color: {{ color }};"></div>
+                </div>
+                <span class="rating-value" style="color: {{ color }};">{{ value }} / 5</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if review.review_text %}
+        <p class="review-text">{{ review.review_text }}</p>
+        {% endif %}
+
+        <div class="vote-row">
+            {% if session.student_id %}
+                {% set my_vote = user_votes.get(review.review_id) %}
+                <form method="POST"
+                      action="{{ url_for('vote_review', review_id=review.review_id) }}"
+                      class="vote-form">
+                    <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                    <input type="hidden" name="value" value="1">
+                    <button type="submit" class="vote-btn {% if my_vote == 1 %}active{% endif %}">
+                        &#128077; {{ review.helpful_count }}
+                    </button>
+                </form>
+                <form method="POST"
+                      action="{{ url_for('vote_review', review_id=review.review_id) }}"
+                      class="vote-form">
+                    <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                    <input type="hidden" name="value" value="-1">
+                    <button type="submit" class="vote-btn {% if my_vote == -1 %}active{% endif %}">
+                        &#128078; {{ review.not_helpful_count }}
+                    </button>
+                </form>
+            {% else %}
+                <span class="vote-readonly">
+                    &#128077; {{ review.helpful_count }} &nbsp; &#128078; {{ review.not_helpful_count }}
+                    &nbsp;&middot;&nbsp; <a href="{{ url_for('login') }}">Log in</a> to vote
+                </span>
+            {% endif %}
+        </div>
 
         <h4>Comments</h4>
 
         {% for comment in comments %}
             {% if comment.review_id == review.review_id %}
                 <div class="comment-card">
-                    <p><strong>{{ comment.pseudonym }}</strong></p>
+                    <p>
+                        <strong>{{ comment.pseudonym }}</strong>
+                        <span class="comment-time">{{ comment.created_at | relative_time }}</span>
+                    </p>
                     <p>{{ comment.comment_text }}</p>
                 </div>
             {% endif %}
@@ -44,7 +155,8 @@
         {% if session.student_id %}
             <form method="POST" action="{{ url_for('submit_comment', review_id=review.review_id) }}">
                 <input type="hidden" name="project_id" value="{{ project.project_id }}">
-                <textarea name="comment_text" rows="3" placeholder="Add a comment..." required></textarea>
+                <textarea name="comment_text" rows="3"
+                          placeholder="Add a comment..." required></textarea>
                 <button type="submit" class="button">Post Comment</button>
             </form>
         {% else %}
@@ -53,11 +165,40 @@
     </div>
     {% endfor %}
 {% else %}
-    <div class="project-card">
-        <p>No reviews available yet for this project.</p>
+    <div class="empty-state">
+        <p class="empty-title">No reviews yet</p>
+        <p class="empty-sub">Be the first to share your experience with this project.</p>
+        {% if session.student_id %}
+            <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
+                Submit Review
+            </a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="button">Log in to Review</a>
+        {% endif %}
     </div>
 {% endif %}
 
-<a href="{{ url_for('home') }}" class="button">Back to Projects</a>
+<a href="{{ url_for('home') }}" class="button">&#8592; Back to Projects</a>
+
+<button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
+
+<script>
+    window.addEventListener('scroll', function () {
+        document.getElementById('scroll-top').style.display = window.scrollY > 300 ? 'flex' : 'none';
+    });
+
+    document.querySelectorAll('.review-text').forEach(function (el) {
+        if (el.scrollHeight > el.clientHeight + 2) {
+            var btn = document.createElement('button');
+            btn.className = 'read-more-btn';
+            btn.textContent = 'Read more';
+            btn.onclick = function () {
+                el.classList.toggle('expanded');
+                btn.textContent = el.classList.contains('expanded') ? 'Read less' : 'Read more';
+            };
+            el.after(btn);
+        }
+    });
+</script>
 
 {% endblock %}

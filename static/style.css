@@ -1,17 +1,30 @@
-/* Base Styles */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+/* ================================================================
+   Base
+   ================================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
-/* Navbar */
+body {
+    margin: 0;
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* ================================================================
+   Navbar (sticky)
+   ================================================================ */
 .navbar {
     background-color: #2c3e50;
     color: white;
     padding: 1rem 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .nav-container {
@@ -27,12 +40,15 @@ body {
 
 .logo {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
 .nav-links {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
+    align-items: center;
     flex-wrap: wrap;
 }
 
@@ -40,26 +56,41 @@ body {
     color: white;
     text-decoration: none;
     font-weight: 500;
+    font-size: 0.95rem;
+    opacity: 0.9;
 }
 
 .nav-links a:hover {
+    opacity: 1;
     text-decoration: underline;
 }
 
-/* Main Content */
+.nav-pseudonym {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+/* ================================================================
+   Main container
+   ================================================================ */
 .container {
     width: 90%;
     max-width: 1000px;
     margin: 2rem auto;
 }
 
-/* Page Header */
+/* ================================================================
+   Page header
+   ================================================================ */
 .page-header {
     margin-bottom: 1.5rem;
 }
 
 .page-header h1 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .page-header p {
@@ -67,55 +98,165 @@ body {
     margin-top: 0;
 }
 
-/* Search Bar */
+/* ================================================================
+   Search / filter form
+   ================================================================ */
+.search-form {
+    margin-bottom: 1.5rem;
+}
+
 .search-bar {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 2rem;
     align-items: center;
-    max-width: 600px;
+    margin-bottom: 0;
 }
 
 .search-bar input {
-    width: 100%;
+    flex: 1;
     max-width: 400px;
     height: 40px;
-    padding: 0 10px;
+    padding: 0 0.75rem;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-    box-sizing: border-box;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
 }
 
-/* Buttons */
+.search-bar select {
+    height: 40px;
+    padding: 0 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.65rem 0;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3498db;
+    color: white;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+}
+
+.filter-bar label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #444;
+}
+
+.filter-bar select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: inherit;
+    font-family: inherit;
+    background: white;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+}
+
+.clear-filters {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #888;
+    text-decoration: none;
+}
+
+.clear-filters:hover {
+    color: #e74c3c;
+    text-decoration: underline;
+}
+
+/* ================================================================
+   Result count
+   ================================================================ */
+.result-count {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+/* ================================================================
+   Buttons
+   ================================================================ */
 .button {
     display: inline-block;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.1rem;
     margin-top: 1rem;
     background-color: #3498db;
     color: white;
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.15s;
 }
 
 .button:hover {
     background-color: #2980b9;
 }
 
-/* Project Cards */
+/* ================================================================
+   Project cards
+   ================================================================ */
 .project-card {
     background-color: white;
     padding: 1.25rem;
     margin-bottom: 1.25rem;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    transition: box-shadow 0.2s, transform 0.2s;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .project-card h3 {
     margin-top: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .project-card p {
@@ -123,73 +264,513 @@ body {
 }
 
 .project-meta {
+    font-size: 0.875rem;
+    color: #888;
+}
+
+.project-description {
     font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0.75rem;
+    color: #555;
+    margin: 0.25rem 0 0.75rem;
+    line-height: 1.5;
 }
 
-/* Card Sections */
-.project-summary {
-    margin-bottom: 0.75rem;
+/* Formatted description elements (legacy plain-text renderer) */
+.desc-section {
+    margin: 1.1rem 0 0.15rem;
+    font-size: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #e8e8e8;
 }
 
-.project-reviews {
-    margin-top: 0.5rem;
+.desc-para {
+    margin: 0.2rem 0;
+}
+
+/* Key-value field label (e.g. "Project Partner:") */
+.desc-label {
+    margin: 0.6rem 0 0.05rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888;
+}
+
+/* HTML content inside descriptions (new scraper output) */
+.project-description h3,
+.project-description h4,
+.project-description h5 {
     font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0.8rem 0 0.15rem;
+    color: #333;
 }
 
-.project-reviews p {
+.project-description ul,
+.project-description ol {
+    margin: 0.2rem 0 0.4rem 1.25rem;
+    padding: 0;
+}
+
+.project-description li {
+    margin: 0.1rem 0;
+}
+
+.project-description p {
+    margin: 0.25rem 0;
+}
+
+/* Project metadata (Details: partner, NDA, groups, status) */
+.project-details-meta {
+    background: #f8f9fa;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 0.75rem 1rem 0.9rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* "Details" header inside the box — no divider line, acts as card title */
+.project-details-meta .desc-section {
+    border-top: none;
+    padding-top: 0;
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Tighten up field labels and values inside the details box */
+.project-details-meta .desc-label {
     margin-top: 0.5rem;
 }
 
-/* Rating Bar */
-.rating-bar {
+.project-details-meta .desc-para {
+    margin: 0.05rem 0 0;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+/* Collapsible description on browse page */
+.card-description {
+    max-height: 8em;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.35s ease;
+}
+
+.card-description::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2.5em;
+    background: linear-gradient(transparent, white);
+    pointer-events: none;
+}
+
+.card-description.expanded {
+    max-height: 2000px;
+}
+
+.card-description.expanded::after {
+    display: none;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+.page-btn.active {
+    background: #2c3e50;
+    color: white;
+    border-color: #2c3e50;
+    font-weight: 600;
+}
+
+.page-btn.disabled {
+    color: #ccc;
+    cursor: default;
+}
+
+.card-thumbnail {
+    width: calc(100% + 2.5rem);
+    margin: -1.25rem -1.25rem 1rem;
+    height: 180px;
+    object-fit: contain;
+    object-position: left center;
+    background-color: white;
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 12px 12px 0 0;
+    display: block;
+}
+
+.project-image {
     width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    background-color: #1a1a2e;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* ================================================================
+   Ratings grid + rows
+   ================================================================ */
+.ratings-grid {
+    margin: 0.5rem 0 0.75rem;
+}
+
+.ratings-grid--compact {
+    margin: 0.75rem 0 0.5rem;
+}
+
+.rating-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.35rem 0;
+}
+
+.rating-label {
+    width: 130px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #555;
+    flex-shrink: 0;
+}
+
+/* ================================================================
+   Rating bars (animated)
+   ================================================================ */
+@keyframes fillBar {
+    from { width: 0; }
+    to   { width: var(--target-width, 0%); }
+}
+
+.rating-bar {
+    flex: 1;
     height: 8px;
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    margin: 0.5rem 0 0.75rem 0;
+    background-color: #e8e8e8;
+    border-radius: 999px;
     overflow: hidden;
 }
 
 .rating-fill {
     height: 100%;
     background-color: #3498db;
+    border-radius: 999px;
+    width: 0;
+    animation: fillBar 0.7s ease-out forwards;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
-    .nav-container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .search-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-bar input {
-        width: 100%;
-        max-width: none;
-    }
-
-    .button {
-        width: fit-content;
-    }
-
-    .container {
-        width: 94%;
-        max-width: 900px;
-        margin: 1.5rem auto;
-    }
+.rating-value {
+    width: 52px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
 }
 
-/* Review Form Styles */
+.rating-none {
+    font-size: 0.875rem;
+    color: #bbb;
+}
+
+/* ================================================================
+   Project reviews section on listing page
+   ================================================================ */
+.project-reviews {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 0.6rem;
+}
+
+.project-reviews p {
+    margin: 0.3rem 0;
+}
+
+/* ================================================================
+   Empty state
+   ================================================================ */
+.empty-state {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.empty-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    margin: 0 0 0.5rem;
+}
+
+.empty-sub {
+    color: #888;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* ================================================================
+   Breadcrumb
+   ================================================================ */
+.breadcrumb {
+    font-size: 0.875rem;
+    color: #888;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.breadcrumb a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.crumb-sep {
+    color: #ccc;
+}
+
+/* ================================================================
+   Reviews header (count + sort toggle)
+   ================================================================ */
+.reviews-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.reviews-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.sort-toggle {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.sort-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #555;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.sort-btn:hover {
+    background: #f0f0f0;
+}
+
+.sort-btn.active {
+    background: #2c3e50;
+    color: white;
+    border-color: #2c3e50;
+}
+
+/* ================================================================
+   Review card internals
+   ================================================================ */
+.review-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.avatar-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.review-text {
+    max-height: 7.5em;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin: 0.5rem 0;
+}
+
+.review-text.expanded {
+    max-height: none;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.875rem;
+    font-family: inherit;
+    margin-bottom: 0.5rem;
+}
+
+.read-more-btn:hover {
+    text-decoration: underline;
+}
+
+/* ================================================================
+   Helpfulness vote buttons
+   ================================================================ */
+.vote-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0.75rem 0 0.5rem;
+}
+
+.vote-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.vote-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.95rem;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    background-color: white;
+    color: #555;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.vote-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #bbb;
+}
+
+.vote-btn.active {
+    background-color: #eaf4fb;
+    border-color: #3498db;
+    color: #2980b9;
+    font-weight: 600;
+}
+
+.vote-readonly {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* ================================================================
+   Comment cards
+   ================================================================ */
+.comment-card {
+    background-color: #f8f9fa;
+    border-left: 3px solid #dee2e6;
+    padding: 0.6rem 0.9rem;
+    margin: 0.5rem 0;
+    border-radius: 0 6px 6px 0;
+}
+
+.comment-card p {
+    margin: 0.2rem 0;
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: #aaa;
+    font-weight: 400;
+    margin-left: 0.5rem;
+}
+
+.project-card textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    margin-top: 0.5rem;
+}
+
+/* ================================================================
+   Scroll-to-top button
+   ================================================================ */
+.scroll-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.15s;
+    font-family: inherit;
+}
+
+.scroll-top:hover {
+    background: #3498db;
+}
+
+/* ================================================================
+   Review submission form
+   ================================================================ */
 .form-card {
     max-width: 700px;
     margin: 2rem auto;
-    padding: 1.5rem;
+    padding: 1.75rem;
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -206,11 +787,71 @@ body {
 .form-card textarea {
     padding: 0.75rem;
     font: inherit;
+    border: 1px solid #ccc;
+    border-radius: 6px;
 }
 
 .login-prompt {
     margin-bottom: 1rem;
     padding: 1rem;
-    background: #f5f5f5;
-    border-left: 4px solid #444;
+    background: #f0f4f8;
+    border-left: 4px solid #3498db;
+    border-radius: 0 6px 6px 0;
+}
+
+.char-count {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: right;
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+@media (max-width: 700px) {
+    .nav-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-bar input {
+        max-width: none;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .clear-filters {
+        margin-left: 0;
+    }
+
+    .rating-label {
+        width: 110px;
+    }
+
+    .reviews-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .button {
+        width: fit-content;
+    }
+
+    .container {
+        width: 94%;
+        margin: 1.5rem auto;
+    }
+
+    .scroll-top {
+        bottom: 1rem;
+        right: 1rem;
+    }
 }
