@@ -737,6 +737,7 @@ def project_detail(project_id):
 
     # fetch comments only for visible reviews
     comments = []
+    comment_votes = {}
     if reviews:
         review_ids = [r['review_id'] for r in reviews]
         placeholders = ', '.join(['%s'] * len(review_ids))
@@ -746,13 +747,27 @@ def project_detail(project_id):
                 c.review_id,
                 c.comment_text,
                 c.created_at,
-                s.pseudonym
+                s.pseudonym,
+                (SELECT COUNT(*) FROM comment_helpfulness ch
+                 WHERE ch.comment_id = c.comment_id AND ch.value = 1)  AS helpful_count,
+                (SELECT COUNT(*) FROM comment_helpfulness ch
+                 WHERE ch.comment_id = c.comment_id AND ch.value = -1) AS not_helpful_count
             FROM comments c
             JOIN students s ON c.student_id = s.student_id
             WHERE c.review_id IN ({placeholders})
             ORDER BY c.created_at ASC
         """, review_ids)
         comments = cursor.fetchall()
+
+        if 'student_id' in session and comments:
+            comment_ids = [c['comment_id'] for c in comments]
+            c_placeholders = ', '.join(['%s'] * len(comment_ids))
+            cursor.execute(
+                f'SELECT comment_id, value FROM comment_helpfulness'
+                f' WHERE student_id = %s AND comment_id IN ({c_placeholders})',
+                [session['student_id']] + comment_ids
+            )
+            comment_votes = {row['comment_id']: row['value'] for row in cursor.fetchall()}
 
     conn.close()
 
@@ -762,6 +777,7 @@ def project_detail(project_id):
         reviews=reviews,
         comments=comments,
         user_votes=user_votes,
+        comment_votes=comment_votes,
         review_term=review_term,
         review_terms=review_terms,
         review_count=review_count,
@@ -951,6 +967,55 @@ def vote_review(review_id):
             cursor.execute(
                 'INSERT INTO helpfulness (review_id, student_id, value) VALUES (%s, %s, %s)',
                 (review_id, student_id, value)
+            )
+
+        conn.commit()
+    finally:
+        conn.close()
+
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/comment/<int:comment_id>/vote', methods=['POST'])
+@login_required
+def vote_comment(comment_id):
+    """Toggle a helpful (1) or not-helpful (-1) vote on a comment.
+
+    Submitting the same vote twice removes it; submitting the opposite flips it.
+    """
+    raw_value = request.form.get('value')
+    project_id = request.form.get('project_id')
+
+    if raw_value not in ('1', '-1'):
+        return 'Invalid vote value', 400
+
+    value = int(raw_value)
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT value FROM comment_helpfulness WHERE comment_id = %s AND student_id = %s',
+            (comment_id, student_id)
+        )
+        existing = cursor.fetchone()
+
+        if existing:
+            if existing['value'] == value:
+                cursor.execute(
+                    'DELETE FROM comment_helpfulness WHERE comment_id = %s AND student_id = %s',
+                    (comment_id, student_id)
+                )
+            else:
+                cursor.execute(
+                    'UPDATE comment_helpfulness SET value = %s WHERE comment_id = %s AND student_id = %s',
+                    (value, comment_id, student_id)
+                )
+        else:
+            cursor.execute(
+                'INSERT INTO comment_helpfulness (comment_id, student_id, value) VALUES (%s, %s, %s)',
+                (comment_id, student_id, value)
             )
 
         conn.commit()

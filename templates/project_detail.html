@@ -175,6 +175,36 @@
                         <span class="comment-time">{{ comment.created_at | relative_time }}</span>
                     </p>
                     <p>{{ comment.comment_text }}</p>
+                    <div class="comment-vote-row">
+                        {% if session.student_id %}
+                            {% set my_comment_vote = comment_votes.get(comment.comment_id) %}
+                            <form method="POST"
+                                  action="{{ url_for('vote_comment', comment_id=comment.comment_id) }}"
+                                  class="vote-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <input type="hidden" name="value" value="1">
+                                <button type="submit"
+                                        class="vote-btn vote-btn--small {% if my_comment_vote == 1 %}active{% endif %}">
+                                    &#128077; {{ comment.helpful_count }}
+                                </button>
+                            </form>
+                            <form method="POST"
+                                  action="{{ url_for('vote_comment', comment_id=comment.comment_id) }}"
+                                  class="vote-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <input type="hidden" name="value" value="-1">
+                                <button type="submit"
+                                        class="vote-btn vote-btn--small {% if my_comment_vote == -1 %}active{% endif %}">
+                                    &#128078; {{ comment.not_helpful_count }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="vote-readonly vote-readonly--small">
+                                &#128077; {{ comment.helpful_count }}
+                                &nbsp;&#128078; {{ comment.not_helpful_count }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
         {% endfor %}

@@ -923,6 +923,23 @@ body {
     color: #888;
 }
 
+.comment-vote-row {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    margin-top: 0.4rem;
+}
+
+.vote-btn--small {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.vote-readonly--small {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
 /* ================================================================
    Comment cards
    ================================================================ */
