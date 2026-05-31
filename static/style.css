@@ -321,6 +321,40 @@ body {
     border-top: 1px solid #e8e8e8;
 }
 
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.6rem 0 0.25rem;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    background: #eaf4fb;
+    border: 1px solid #aed6f1;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: #2980b9;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.filter-chip:hover {
+    background: #d5eaf7;
+    border-color: #3498db;
+    text-decoration: none;
+}
+
+.chip-remove {
+    font-size: 0.9rem;
+    line-height: 1;
+    opacity: 0.6;
+}
+
 /* ================================================================
    Result count
    ================================================================ */
