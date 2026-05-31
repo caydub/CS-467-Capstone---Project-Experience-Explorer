@@ -67,35 +67,24 @@
         Reviews
         <span class="review-total-count">({{ review_count }})</span>
     </h2>
-    <div class="review-controls">
-        {% if review_terms %}
-        <form method="GET" action="{{ url_for('project_detail', project_id=project.project_id) }}"
-              class="review-term-form">
-            <input type="hidden" name="review_sort" value="{{ review_sort }}">
-            <select name="review_term" class="review-term-select"
-                    onchange="this.form.submit()">
-                <option value="">All terms</option>
-                {% for t in review_terms %}
-                <option value="{{ t }}" {% if review_term == t %}selected{% endif %}>{{ t }}</option>
-                {% endfor %}
-            </select>
-        </form>
-        {% endif %}
-        <div class="sort-toggle">
-            <a href="{{ url_for('project_detail', project_id=project.project_id,
-                       review_sort='helpful', review_term=review_term or '') }}"
-               class="sort-btn {% if review_sort == 'helpful' %}active{% endif %}">Most Helpful</a>
-            <a href="{{ url_for('project_detail', project_id=project.project_id,
-                       review_sort='recent', review_term=review_term or '') }}"
-               class="sort-btn {% if review_sort == 'recent' %}active{% endif %}">Most Recent</a>
-        </div>
-    </div>
+    {% if review_terms %}
+    <form method="GET" action="{{ url_for('project_detail', project_id=project.project_id) }}"
+          class="review-term-form">
+        <select name="review_term" class="review-term-select"
+                onchange="this.form.submit()">
+            <option value="">All terms</option>
+            {% for t in review_terms %}
+            <option value="{{ t }}" {% if review_term == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
 </div>
 
 {% if review_term %}
 <p class="review-filter-active">
     Showing reviews from <strong>{{ review_term }}</strong> ·
-    <a href="{{ url_for('project_detail', project_id=project.project_id, review_sort=review_sort) }}">
+    <a href="{{ url_for('project_detail', project_id=project.project_id) }}">
         Clear filter
     </a>
 </p>
@@ -205,7 +194,7 @@
 
     {# ---- Review pagination ---- #}
     {% if review_total_pages > 1 %}
-    {% set rqp %}review_sort={{ review_sort }}{% if review_term %}&review_term={{ review_term }}{% endif %}{% endset %}
+    {% set rqp %}{% if review_term %}review_term={{ review_term }}{% endif %}{% endset %}
     <div class="pagination">
         {% if review_page > 1 %}
             <a href="{{ url_for('project_detail', project_id=project.project_id) }}?{{ rqp }}&review_page={{ review_page - 1 }}"

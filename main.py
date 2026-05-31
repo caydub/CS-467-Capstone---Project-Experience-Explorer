@@ -637,19 +637,13 @@ def home():
 @app.route('/project/<int:project_id>')
 def project_detail(project_id):
     """Render the project detail page with all reviews and comments."""
-    review_sort = request.args.get('review_sort', 'helpful')
     review_term = request.args.get('review_term', '').strip() or None
     try:
         review_page = max(1, int(request.args.get('review_page', 1) or 1))
     except (ValueError, TypeError):
         review_page = 1
     reviews_per_page = 5
-
-    review_order = (
-        'helpful_count - not_helpful_count DESC, r.created_at DESC'
-        if review_sort == 'helpful'
-        else 'r.created_at DESC'
-    )
+    review_order = 'helpful_count - not_helpful_count DESC, r.created_at DESC'
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -768,7 +762,6 @@ def project_detail(project_id):
         reviews=reviews,
         comments=comments,
         user_votes=user_votes,
-        review_sort=review_sort,
         review_term=review_term,
         review_terms=review_terms,
         review_count=review_count,
