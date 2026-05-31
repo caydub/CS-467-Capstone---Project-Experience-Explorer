@@ -179,16 +179,18 @@ Each entry includes what was decided, why, what alternatives were considered, an
 ### 011 — Rating columns on reviews table
 
 **Date:** April 23, 2026
-**Decision:** Rating criteria are columns directly on the reviews table: `difficulty`, `workload`, `team_dynamics`, `would_recommend` (all 1-5 integers). No separate criteria or review_ratings tables.
+**Decision:** Rating criteria are columns directly on the reviews table: `complexity`, `workload`, `team_dynamics`, `would_recommend` (all 1-5 integers). No separate criteria or review_ratings tables.
 
 **Why:**
 - Criteria are fixed for the project scope — no need for dynamic extensibility
-- Simpler queries — `SELECT difficulty, workload FROM reviews` just works with no JOINs
+- Simpler queries — `SELECT complexity, workload FROM reviews` just works with no JOINs
 - Maps directly to what Ben built in the templates
 - Easier to explain and demo in Progress Reports
 
 **Alternatives considered:**
 - Separate `criteria` and `review_ratings` tables (Henry's original approach) — rejected for this project's scope. Technically superior for extensibility but adds unnecessary complexity for a fixed set of 4 criteria.
+
+**Note:** Column was originally named `difficulty`. Renamed to `complexity` in migration 008 (May 2026) — "complexity" more accurately describes what the rating measures.
 
 ---
 
@@ -263,4 +265,4 @@ Each entry includes what was decided, why, what alternatives were considered, an
 | # | Question | Status |
 |---|----------|--------|
 | 017 | Local MySQL for dev vs shared Cloud SQL? | Deferred — team comfortable with proxy approach |
-| 018 | Rename `difficulty` → `complexity` across DB and codebase? | Deferred post-course — requires coordinated migration + template updates |
+| 018 | Rename `difficulty` → `complexity` across DB and codebase? | ✅ Done — migration 008, all templates and routes updated (May 2026) |

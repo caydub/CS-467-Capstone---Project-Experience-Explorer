@@ -74,15 +74,21 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 - Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion)
 - Project detail pages with paginated, term-filterable reviews
 - Google OAuth login restricted to @oregonstate.edu accounts
-- Submit and edit reviews (term dropdown, four rating criteria, optional AI use field)
+- Submit and edit reviews (term dropdown, four rating criteria — complexity, workload, team dynamics, would recommend — plus optional AI use field)
 - Helpfulness voting (👍/👎) on both reviews and comments
-- Comments on reviews
+- Comments on reviews, sorted by helpfulness
+- Flash messages for review submission, edits, and comments
+- Custom 404 and 500 error pages
+- Renamed `difficulty` → `complexity` across DB and entire codebase (migration 008)
 - Thumbnail images scraped from the Capstone portal
 
 **Planned / deferred:**
-- Rename `difficulty` → `complexity` across DB and codebase
 - Flag / report inappropriate reviews
 - Admin moderation panel
+
+**Explicitly out of scope (dropped):**
+- User profile page
+- Contact / feedback page
 
 ---
 

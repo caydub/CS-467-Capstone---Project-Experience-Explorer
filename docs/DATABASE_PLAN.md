@@ -62,7 +62,7 @@ While the app has no real user data, schema changes can be made freely by updati
 
 ### Design Decisions
 
-- **Ratings as columns on reviews** (not a separate table) — simpler queries, criteria are fixed for the project scope. Criteria: difficulty, workload, team_dynamics, would_recommend.
+- **Ratings as columns on reviews** (not a separate table) — simpler queries, criteria are fixed for the project scope. Criteria: complexity, workload, team_dynamics, would_recommend.
 - **ai_use on reviews** — optional VARCHAR(50) column. Populated from a fixed dropdown; not free-text.
 - **students table stores onid_hash and pseudonym** — no raw ONID stored, no password stored. Pseudonym is generated on first login.
 - **term on reviews** — stores when the experience happened (e.g. "Spring 2026"), not when the review was submitted. Selected from a generated dropdown (`generate_terms()`) — free-text entry is no longer allowed.
@@ -104,7 +104,7 @@ While the app has no real user data, schema changes can be made freely by updati
 | term | varchar(50) | e.g. "Spring 2026" — when experience happened |
 | review_text | varchar(4000) | qualitative feedback |
 | ai_use | varchar(50) | nullable — how AI was used during the project (migration 006) |
-| difficulty | int | 1-5 |
+| complexity | int | 1-5 (renamed from difficulty — migration 008) |
 | workload | int | 1-5 |
 | team_dynamics | int | 1-5 |
 | would_recommend | int | 1-5 |
@@ -167,6 +167,8 @@ Unique constraint on (student_id, review_id) — one vote per student per review
 | 004_reviews_comments_add_updated_at.sql | Add updated_at to reviews and comments | Henry Thong | April 2026 |
 | 005_add_image_url_to_projects.sql | Add image_url column to projects | Caleb Richter | May 2026 |
 | 006_add_ai_use_to_reviews.sql | Add ai_use column to reviews | Caleb Richter | May 2026 |
+| 007_add_comment_helpfulness.sql | Add comment_helpfulness table for comment voting | Caleb Richter | May 2026 |
+| 008_rename_difficulty_to_complexity.sql | Rename reviews.difficulty to reviews.complexity | Caleb Richter | May 2026 |
 
 ---
 

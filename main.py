@@ -482,8 +482,8 @@ def home():
         except (ValueError, TypeError):
             return None
 
-    filter_min_difficulty = parse_rating_filter('min_difficulty')
-    filter_max_difficulty = parse_rating_filter('max_difficulty')
+    filter_min_complexity = parse_rating_filter('min_complexity')
+    filter_max_complexity = parse_rating_filter('max_complexity')
     filter_min_workload = parse_rating_filter('min_workload')
     filter_max_workload = parse_rating_filter('max_workload')
     filter_min_team_dynamics = parse_rating_filter('min_team_dynamics')
@@ -496,8 +496,8 @@ def home():
         'title': 'p.title ASC',
         'most_reviews': 'review_count DESC, p.title ASC',
         'avg_score': 'avg_score DESC, p.title ASC',
-        'highest_difficulty': 'avg_difficulty DESC, p.title ASC',
-        'lowest_difficulty': 'avg_difficulty ASC, p.title ASC',
+        'highest_complexity': 'avg_complexity DESC, p.title ASC',
+        'lowest_complexity': 'avg_complexity ASC, p.title ASC',
         'highest_workload': 'avg_workload DESC, p.title ASC',
         'lowest_workload': 'avg_workload ASC, p.title ASC',
         'highest_team_dynamics': 'avg_team_dynamics DESC, p.title ASC',
@@ -516,13 +516,13 @@ def home():
         where_clauses.append('p.title LIKE %s')
         where_params.append(f'%{search_query}%')
 
-    if filter_min_difficulty:
-        having_clauses.append('AVG(r.difficulty) >= %s')
-        having_params.append(filter_min_difficulty)
+    if filter_min_complexity:
+        having_clauses.append('AVG(r.complexity) >= %s')
+        having_params.append(filter_min_complexity)
 
-    if filter_max_difficulty:
-        having_clauses.append('AVG(r.difficulty) <= %s')
-        having_params.append(filter_max_difficulty)
+    if filter_max_complexity:
+        having_clauses.append('AVG(r.complexity) <= %s')
+        having_params.append(filter_max_complexity)
 
     if filter_min_workload:
         having_clauses.append('AVG(r.workload) >= %s')
@@ -561,11 +561,11 @@ def home():
             p.description,
             p.image_url,
             COUNT(r.review_id)                                                  AS review_count,
-            AVG(r.difficulty)                                                   AS avg_difficulty,
+            AVG(r.complexity)                                                   AS avg_complexity,
             AVG(r.workload)                                                     AS avg_workload,
             AVG(r.team_dynamics)                                                AS avg_team_dynamics,
             AVG(r.would_recommend)                                              AS avg_recommend,
-            (AVG(r.difficulty) + AVG(r.workload)
+            (AVG(r.complexity) + AVG(r.workload)
                 + AVG(r.team_dynamics) + AVG(r.would_recommend)) / 4.0         AS avg_score,
             (SELECT r2.review_text FROM reviews r2
              WHERE r2.project_id = p.project_id
@@ -617,8 +617,8 @@ def home():
         projects=projects,
         search_query=search_query,
         sort_option=sort_option,
-        filter_min_difficulty=filter_min_difficulty,
-        filter_max_difficulty=filter_max_difficulty,
+        filter_min_complexity=filter_min_complexity,
+        filter_max_complexity=filter_max_complexity,
         filter_min_workload=filter_min_workload,
         filter_max_workload=filter_max_workload,
         filter_min_team_dynamics=filter_min_team_dynamics,
@@ -655,7 +655,7 @@ def project_detail(project_id):
             p.description,
             p.details,
             p.image_url,
-            AVG(r.difficulty) AS difficulty,
+            AVG(r.complexity) AS complexity,
             AVG(r.workload) AS workload,
             AVG(r.team_dynamics) AS team_dynamics,
             AVG(r.would_recommend) AS would_recommend
@@ -700,7 +700,7 @@ def project_detail(project_id):
             r.review_text,
             r.ai_use,
             r.term,
-            r.difficulty,
+            r.complexity,
             r.workload,
             r.team_dynamics,
             r.would_recommend,
@@ -796,11 +796,11 @@ def submit_review(project_id):
         ai_use = request.form.get('ai_use', '').strip() or None
 
         try:
-            difficulty = int(request.form.get('difficulty'))
+            complexity = int(request.form.get('complexity'))
             workload = int(request.form.get('workload'))
             team_dynamics = int(request.form.get('team_dynamics'))
             would_recommend = int(request.form.get('would_recommend'))
-            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            ratings = [complexity, workload, team_dynamics, would_recommend]
             if not all(1 <= r <= 5 for r in ratings):
                 return 'Ratings must be between 1 and 5', 400
         except (TypeError, ValueError):
@@ -813,13 +813,13 @@ def submit_review(project_id):
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO reviews
-                    (project_id, student_id, term, difficulty, workload,
+                    (project_id, student_id, term, complexity, workload,
                      team_dynamics, would_recommend, review_text, ai_use)
                 VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 project_id, session['student_id'], term,
-                difficulty, workload, team_dynamics, would_recommend,
+                complexity, workload, team_dynamics, would_recommend,
                 review_text, ai_use,
             ))
             conn.commit()
@@ -855,11 +855,11 @@ def edit_review(review_id):
         ai_use = request.form.get('ai_use', '').strip() or None
 
         try:
-            difficulty = int(request.form.get('difficulty'))
+            complexity = int(request.form.get('complexity'))
             workload = int(request.form.get('workload'))
             team_dynamics = int(request.form.get('team_dynamics'))
             would_recommend = int(request.form.get('would_recommend'))
-            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            ratings = [complexity, workload, team_dynamics, would_recommend]
             if not all(1 <= r <= 5 for r in ratings):
                 conn.close()
                 return 'Ratings must be between 1 and 5', 400
@@ -873,12 +873,12 @@ def edit_review(review_id):
         try:
             cursor.execute("""
                 UPDATE reviews
-                SET term = %s, difficulty = %s, workload = %s,
+                SET term = %s, complexity = %s, workload = %s,
                     team_dynamics = %s, would_recommend = %s,
                     review_text = %s, ai_use = %s
                 WHERE review_id = %s
             """, (
-                term, difficulty, workload, team_dynamics, would_recommend,
+                term, complexity, workload, team_dynamics, would_recommend,
                 review_text, ai_use, review_id,
             ))
             conn.commit()

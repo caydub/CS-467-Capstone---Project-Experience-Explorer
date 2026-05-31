@@ -33,7 +33,7 @@
 <div class="project-card">
     <div class="ratings-grid">
         {% set ratings = [
-            ('Difficulty',     project.difficulty),
+            ('Complexity',     project.complexity),
             ('Workload',       project.workload),
             ('Team Dynamics',  project.team_dynamics),
             ('Would Recommend', project.would_recommend)
@@ -110,7 +110,7 @@
 
         <div class="ratings-grid ratings-grid--compact">
             {% set review_ratings = [
-                ('Difficulty',     review.difficulty),
+                ('Complexity',     review.complexity),
                 ('Workload',       review.workload),
                 ('Team Dynamics',  review.team_dynamics),
                 ('Would Recommend', review.would_recommend)

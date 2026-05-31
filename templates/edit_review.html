@@ -23,14 +23,14 @@
             {% endfor %}
         </select>
 
-        <label for="difficulty">Difficulty</label>
-        <select id="difficulty" name="difficulty" required>
+        <label for="complexity">Complexity</label>
+        <select id="complexity" name="complexity" required>
             <option value="">Select a rating</option>
-            <option value="1" {% if review.difficulty == 1 %}selected{% endif %}>1 - Very easy</option>
-            <option value="2" {% if review.difficulty == 2 %}selected{% endif %}>2 - Easy</option>
-            <option value="3" {% if review.difficulty == 3 %}selected{% endif %}>3 - Moderate</option>
-            <option value="4" {% if review.difficulty == 4 %}selected{% endif %}>4 - Hard</option>
-            <option value="5" {% if review.difficulty == 5 %}selected{% endif %}>5 - Very hard</option>
+            <option value="1" {% if review.complexity == 1 %}selected{% endif %}>1 - Very easy</option>
+            <option value="2" {% if review.complexity == 2 %}selected{% endif %}>2 - Easy</option>
+            <option value="3" {% if review.complexity == 3 %}selected{% endif %}>3 - Moderate</option>
+            <option value="4" {% if review.complexity == 4 %}selected{% endif %}>4 - Hard</option>
+            <option value="5" {% if review.complexity == 5 %}selected{% endif %}>5 - Very hard</option>
         </select>
 
         <label for="workload">Workload</label>
