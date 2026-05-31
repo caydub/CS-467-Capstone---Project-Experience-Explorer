@@ -311,6 +311,16 @@ body {
     padding-top: 1.15rem;
 }
 
+.filter-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e8e8e8;
+}
+
 /* ================================================================
    Result count
    ================================================================ */

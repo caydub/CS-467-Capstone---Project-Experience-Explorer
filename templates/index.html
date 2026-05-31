@@ -24,7 +24,7 @@
 <form class="search-form" method="GET" action="/">
     <div class="search-bar">
         <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
-        <button type="submit" class="button">Apply</button>
+        <button type="submit" class="button">Search</button>
     </div>
 
     <div class="filter-panel-header">
@@ -32,9 +32,6 @@
             Filters{% if active_filter_count %} <span class="filter-badge">{{ active_filter_count }}</span>{% endif %}
             <span class="toggle-arrow">▼</span>
         </button>
-        {% if active_filter_count %}
-        <a href="/?search={{ search_query }}" class="clear-filters">Clear all filters</a>
-        {% endif %}
     </div>
 
     <div class="filter-panel" id="filter-panel" {% if not active_filter_count %}style="display:none"{% endif %}>
@@ -152,6 +149,14 @@
             </div>
 
         </div>
+
+        <div class="filter-panel-footer">
+            {% if active_filter_count %}
+            <a href="/?search={{ search_query }}" class="clear-filters">Clear all filters</a>
+            {% endif %}
+            <button type="submit" class="button">Apply</button>
+        </div>
+
     </div>
 </form>
 
