@@ -17,7 +17,7 @@ A web app for OSU students to browse and submit anonymous reviews of capstone pr
 | Templates | Jinja2 |
 | Database | MySQL via Google Cloud SQL |
 | Hosting | Google App Engine |
-| Auth | ONID / CAS (bonus feature) |
+| Auth | Google OAuth 2.0 (restricted to @oregonstate.edu) |
 | CI/CD | GitHub Actions |
 
 ---
@@ -72,9 +72,9 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 |------|--------|
 | Week 1 | Infrastructure initialized — GCP, Cloud SQL, App Engine, GitHub CI/CD. Project plan submitted. |
 | Week 2 | Schema finalized and deployed to Cloud SQL. 28 CS467 projects scraped and seeded. Flask routes wired to database. Live app showing real project data. PR1 submitted. |
-| Week 3 | — |
-| Week 4 | — |
-| Week 5 | — |
+| Week 3 | Google OAuth 2.0 integrated (restricted to OSU emails). Helpfulness voting and comment system built. Filtering, avg-score sort, and pagination added to browse page. PR2 submitted. |
+| Week 4 | Thumbnails from Capstone portal added to project cards. Pagination, structured description rendering, and UI polish. PR3 submitted. |
+| Week 5 | Browse page filter panel overhaul (min/max ranges, collapsible, sort inside panel). Review editing, AI use field, review pagination and term filtering, comment voting. PR4 submitted. |
 | Week 6 | — |
 | Week 7 | — |
 | Week 8 | — |
