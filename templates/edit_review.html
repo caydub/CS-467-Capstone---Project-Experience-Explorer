@@ -99,5 +99,18 @@
     textarea.addEventListener('input', function () {
         counter.textContent = this.value.length + ' / 4000';
     });
+
+    // warn before leaving with unsaved changes
+    var formChanged = false;
+    var form = document.querySelector('form');
+    form.addEventListener('change', function () { formChanged = true; });
+    form.addEventListener('input', function () { formChanged = true; });
+    form.addEventListener('submit', function () { formChanged = false; });
+    window.addEventListener('beforeunload', function (e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 </script>
 {% endblock %}

@@ -755,7 +755,7 @@ def project_detail(project_id):
             FROM comments c
             JOIN students s ON c.student_id = s.student_id
             WHERE c.review_id IN ({placeholders})
-            ORDER BY c.created_at ASC
+            ORDER BY helpful_count - not_helpful_count DESC, c.created_at ASC
         """, review_ids)
         comments = cursor.fetchall()
 
@@ -1034,6 +1034,12 @@ def vote_comment(comment_id):
 def not_found(e):
     """Render the custom 404 page."""
     return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    """Render the custom 500 page."""
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':

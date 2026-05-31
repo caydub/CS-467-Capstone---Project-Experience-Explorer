@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error — Project Experience Explorer{% endblock %}
+
+{% block content %}
+<div class="empty-state" style="margin-top: 3rem;">
+    <p class="empty-title" style="font-size: 2rem;">500</p>
+    <p class="empty-title">Something went wrong</p>
+    <p class="empty-sub">An unexpected error occurred. Try refreshing the page or come back in a moment.</p>
+    <a href="{{ url_for('home') }}" class="button" style="margin-top: 1.25rem;">← Back to Projects</a>
+</div>
+{% endblock %}

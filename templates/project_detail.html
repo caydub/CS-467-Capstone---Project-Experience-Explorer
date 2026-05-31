@@ -213,7 +213,9 @@
             <form method="POST" action="{{ url_for('submit_comment', review_id=review.review_id) }}">
                 <input type="hidden" name="project_id" value="{{ project.project_id }}">
                 <textarea name="comment_text" rows="3"
-                          placeholder="Add a comment..." required></textarea>
+                          placeholder="Add a comment..."
+                          maxlength="2000" class="comment-textarea" required></textarea>
+                <span class="char-count comment-char-count">0 / 2000</span>
                 <button type="submit" class="button">Post Comment</button>
             </form>
         {% else %}
@@ -275,6 +277,14 @@
 <script>
     window.addEventListener('scroll', function () {
         document.getElementById('scroll-top').style.display = window.scrollY > 300 ? 'flex' : 'none';
+    });
+
+    // character counters on comment textareas
+    document.querySelectorAll('.comment-textarea').forEach(function (ta) {
+        var counter = ta.nextElementSibling;
+        ta.addEventListener('input', function () {
+            counter.textContent = ta.value.length + ' / 2000';
+        });
     });
 
     document.querySelectorAll('.review-text').forEach(function (el) {
