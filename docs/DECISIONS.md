@@ -98,17 +98,17 @@ Each entry includes what was decided, why, what alternatives were considered, an
 
 ---
 
-### 006 — Pre-populated project list via combination of scraping and manual entry
+### 006 — Pre-populated project list via scraping and manual entry
 
 **Date:** April 12, 2026
-**Decision:** Seed the project list from the OSU Capstone portal using a combination of scraping and manual entry.
+**Decision:** Seed the project list from the OSU Capstone portal using BeautifulSoup scraping and manual entry.
 
 **Why:**
 - Prevents duplicate/misspelled project names from reviewers typing freeform
 - Scraping gets the bulk of the list automatically
 - Manual entry covers anything the scraper misses or new projects added mid-term
 
-**Status:** Scraping approach TBD — Henry investigating on Wednesday April 16.
+**Status:** Complete — 28 CS467 projects seeded as of April 23, 2026. Scraper is idempotent (uses `ON DUPLICATE KEY UPDATE`) and safe to re-run.
 
 ---
 
@@ -192,10 +192,75 @@ Each entry includes what was decided, why, what alternatives were considered, an
 
 ---
 
+---
+
+### 012 — Term entry standardized to dropdown
+
+**Date:** May 2026
+**Decision:** Replace the free-text term input on the review submission form with a generated dropdown (`generate_terms()`) covering the past 5 years by quarter.
+
+**Why:**
+- Free-text allowed arbitrary values (e.g. "asdf") that pollute filters and display
+- A generated list of valid academic quarters covers all realistic use cases
+- Consistent values enable reliable filtering by term on the project detail page
+
+**Note:** Term filter dropdowns (e.g. on the project detail page) query `DISTINCT term` from actual reviews — they only show terms that have reviews, not the full generated list.
+
+---
+
+### 013 — Browse page filter panel
+
+**Date:** May 2026
+**Decision:** Replace the inline filter bar with a collapsible filter panel. Sort moved into the panel. Min/max range selects for all four rating criteria. Active filter count badge on the toggle button.
+
+**Why:**
+- Inline filter bar was cluttered and the sort dropdown felt redundant next to search
+- Collapsible panel keeps the browse page clean by default and reveals options on demand
+- Min/max ranges are more useful than single-value filters for ratings
+- Sort logically belongs with filters rather than the search bar
+
+---
+
+### 014 — Review editing (owner only)
+
+**Date:** May 2026
+**Decision:** Reviewers can edit their own reviews via `/review/<id>/edit`. Ownership is enforced server-side (403 if student_id doesn't match session). Edit button is only rendered for the review's author.
+
+**Why:**
+- Reviewers may want to correct mistakes or update their experience
+- Server-side ownership check prevents spoofed requests
+- Client-side hiding of the button is UX only, not a security measure
+
+---
+
+### 015 — AI use field on reviews (optional)
+
+**Date:** May 2026
+**Decision:** Add an optional `ai_use` field to reviews. Fixed dropdown options: Not used / Research / learning / Code generation / Debugging / troubleshooting / Multiple / other.
+
+**Why:**
+- Relevant context for readers — knowing how a team used AI affects how they interpret the review
+- Optional keeps the form lightweight; not all reviewers have relevant AI use to report
+- Fixed options prevent free-text noise; covers the realistic range of use cases
+
+---
+
+### 016 — Review pagination and term filtering on project detail
+
+**Date:** May 2026
+**Decision:** Reviews on project detail pages are paginated (5 per page) and filterable by term. Always sorted by helpfulness score (helpful votes minus not-helpful votes), most recent as tiebreaker. No user-selectable sort on the detail page.
+
+**Why:**
+- Projects with many reviews need pagination to remain readable
+- Term filtering lets readers find reviews from a specific quarter
+- Fixing sort to helpfulness removes the risk of conflicts between sort and term filter state
+- A second sort axis (e.g. most recent) was removed to keep state management simple
+
+---
+
 ## Open Decisions
 
 | # | Question | Status |
 |---|----------|--------|
-| 012 | Local MySQL for dev vs shared Cloud SQL? | Flagged — revisit when schema is ready |
-| 013 | Pseudonym generation — how exactly? Random words, adjective+noun, etc? | Resolved — adjective+noun+number (e.g. FrostRaven42) |
-| 014 | Capstone portal scraping approach | Henry investigating Wednesday April 16 |
+| 017 | Local MySQL for dev vs shared Cloud SQL? | Deferred — team comfortable with proxy approach |
+| 018 | Rename `difficulty` → `complexity` across DB and codebase? | Deferred post-course — requires coordinated migration + template updates |

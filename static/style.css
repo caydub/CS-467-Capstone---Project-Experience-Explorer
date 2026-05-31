@@ -201,6 +201,116 @@ body {
     text-decoration: underline;
 }
 
+/* Filter panel toggle header */
+.filter-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.filter-toggle-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.filter-toggle-btn:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+}
+
+.toggle-arrow {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Collapsible filter panel */
+.filter-panel {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.filter-section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: #888;
+}
+
+.filter-range {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.filter-range select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.3rem 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: white;
+}
+
+.filter-range-sep {
+    color: #aaa;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.filter-section select {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: white;
+}
+
+.filter-section--wide {
+    grid-column: span 2;
+}
+
+.filter-section--wide select {
+    width: 100%;
+    max-width: 320px;
+}
+
+.filter-section--checkbox {
+    justify-content: flex-end;
+    padding-top: 1.15rem;
+}
+
 /* ================================================================
    Result count
    ================================================================ */
@@ -518,6 +628,49 @@ body {
     margin: 0.3rem 0;
 }
 
+.review-count-line {
+    margin: 0 0 0.4rem;
+    font-size: 0.875rem;
+}
+
+.top-snippet {
+    margin-top: 0.35rem;
+    padding: 0.55rem 0.75rem;
+    background: #f7f8fa;
+    border-left: 3px solid #d8dde3;
+    border-radius: 0 6px 6px 0;
+}
+
+.snippet-text {
+    font-size: 0.875rem;
+    color: #444;
+    font-style: italic;
+    line-height: 1.55;
+    margin: 0 0 0.4rem;
+}
+
+.snippet-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.avatar-badge--small {
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.no-reviews-yet {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: #aaa;
+    font-style: italic;
+}
+
 /* ================================================================
    Empty state
    ================================================================ */
@@ -568,7 +721,7 @@ body {
 }
 
 /* ================================================================
-   Reviews header (count + sort toggle)
+   Reviews header (count + sort toggle + term filter)
    ================================================================ */
 .reviews-header {
     display: flex;
@@ -583,6 +736,48 @@ body {
     margin: 0;
     font-size: 1.2rem;
     font-weight: 700;
+}
+
+.review-total-count {
+    font-weight: 400;
+    color: #888;
+}
+
+.review-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.review-term-form {
+    margin: 0;
+}
+
+.review-term-select {
+    height: 34px;
+    padding: 0 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    background: white;
+    color: #555;
+}
+
+.review-filter-active {
+    font-size: 0.875rem;
+    color: #888;
+    margin: -0.25rem 0 0.75rem;
+}
+
+.review-filter-active a {
+    color: #e74c3c;
+    text-decoration: none;
+}
+
+.review-filter-active a:hover {
+    text-decoration: underline;
 }
 
 .sort-toggle {
@@ -619,6 +814,29 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
+}
+
+.edit-review-btn {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #3498db;
+    text-decoration: none;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid #cce4f6;
+    border-radius: 5px;
+    background: #f0f8ff;
+    transition: background-color 0.15s;
+}
+
+.edit-review-btn:hover {
+    background: #daeefb;
+    text-decoration: none;
+}
+
+.ai-use-tag {
+    font-size: 0.8rem;
+    color: #777;
+    margin: 0.25rem 0 0.5rem;
 }
 
 .avatar-badge {
@@ -703,6 +921,23 @@ body {
 .vote-readonly {
     font-size: 0.9rem;
     color: #888;
+}
+
+.comment-vote-row {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    margin-top: 0.4rem;
+}
+
+.vote-btn--small {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.vote-readonly--small {
+    font-size: 0.8rem;
+    color: #aaa;
 }
 
 /* ================================================================
@@ -805,6 +1040,12 @@ body {
     text-align: right;
 }
 
+.field-optional {
+    font-size: 0.8rem;
+    color: #aaa;
+    font-weight: 400;
+}
+
 /* ================================================================
    Responsive
    ================================================================ */
@@ -830,6 +1071,10 @@ body {
 
     .clear-filters {
         margin-left: 0;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
     }
 
     .rating-label {

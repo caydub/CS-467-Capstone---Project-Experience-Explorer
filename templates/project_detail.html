@@ -61,15 +61,34 @@
     Submit Review
 </a>
 
+{# ---- Reviews header ---- #}
 <div class="reviews-header">
-    <h2>Reviews ({{ reviews | length }})</h2>
-    <div class="sort-toggle">
-        <a href="{{ url_for('project_detail', project_id=project.project_id, review_sort='helpful') }}"
-           class="sort-btn {% if review_sort == 'helpful' %}active{% endif %}">Most Helpful</a>
-        <a href="{{ url_for('project_detail', project_id=project.project_id, review_sort='recent') }}"
-           class="sort-btn {% if review_sort == 'recent' %}active{% endif %}">Most Recent</a>
-    </div>
+    <h2>
+        Reviews
+        <span class="review-total-count">({{ review_count }})</span>
+    </h2>
+    {% if review_terms %}
+    <form method="GET" action="{{ url_for('project_detail', project_id=project.project_id) }}"
+          class="review-term-form">
+        <select name="review_term" class="review-term-select"
+                onchange="this.form.submit()">
+            <option value="">All terms</option>
+            {% for t in review_terms %}
+            <option value="{{ t }}" {% if review_term == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
 </div>
+
+{% if review_term %}
+<p class="review-filter-active">
+    Showing reviews from <strong>{{ review_term }}</strong> ·
+    <a href="{{ url_for('project_detail', project_id=project.project_id) }}">
+        Clear filter
+    </a>
+</p>
+{% endif %}
 
 {% if reviews %}
     {% for review in reviews %}
@@ -83,6 +102,10 @@
                 <strong>{{ review.pseudonym }}</strong>
                 <span class="project-meta">· {{ review.term }}</span>
             </div>
+            {% if session.student_id and session.student_id == review.student_id %}
+            <a href="{{ url_for('edit_review', review_id=review.review_id) }}"
+               class="edit-review-btn">Edit</a>
+            {% endif %}
         </div>
 
         <div class="ratings-grid ratings-grid--compact">
@@ -104,6 +127,10 @@
             </div>
             {% endfor %}
         </div>
+
+        {% if review.ai_use %}
+        <p class="ai-use-tag">🤖 AI use: {{ review.ai_use }}</p>
+        {% endif %}
 
         {% if review.review_text %}
         <p class="review-text">{{ review.review_text }}</p>
@@ -148,6 +175,36 @@
                         <span class="comment-time">{{ comment.created_at | relative_time }}</span>
                     </p>
                     <p>{{ comment.comment_text }}</p>
+                    <div class="comment-vote-row">
+                        {% if session.student_id %}
+                            {% set my_comment_vote = comment_votes.get(comment.comment_id) %}
+                            <form method="POST"
+                                  action="{{ url_for('vote_comment', comment_id=comment.comment_id) }}"
+                                  class="vote-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <input type="hidden" name="value" value="1">
+                                <button type="submit"
+                                        class="vote-btn vote-btn--small {% if my_comment_vote == 1 %}active{% endif %}">
+                                    &#128077; {{ comment.helpful_count }}
+                                </button>
+                            </form>
+                            <form method="POST"
+                                  action="{{ url_for('vote_comment', comment_id=comment.comment_id) }}"
+                                  class="vote-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <input type="hidden" name="value" value="-1">
+                                <button type="submit"
+                                        class="vote-btn vote-btn--small {% if my_comment_vote == -1 %}active{% endif %}">
+                                    &#128078; {{ comment.not_helpful_count }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="vote-readonly vote-readonly--small">
+                                &#128077; {{ comment.helpful_count }}
+                                &nbsp;&#128078; {{ comment.not_helpful_count }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
         {% endfor %}
@@ -164,17 +221,50 @@
         {% endif %}
     </div>
     {% endfor %}
+
+    {# ---- Review pagination ---- #}
+    {% if review_total_pages > 1 %}
+    {% set rqp %}{% if review_term %}review_term={{ review_term }}{% endif %}{% endset %}
+    <div class="pagination">
+        {% if review_page > 1 %}
+            <a href="{{ url_for('project_detail', project_id=project.project_id) }}?{{ rqp }}&review_page={{ review_page - 1 }}"
+               class="page-btn">‹ Prev</a>
+        {% else %}
+            <span class="page-btn disabled">‹ Prev</span>
+        {% endif %}
+
+        {% for p in range(1, review_total_pages + 1) %}
+            <a href="{{ url_for('project_detail', project_id=project.project_id) }}?{{ rqp }}&review_page={{ p }}"
+               class="page-btn {% if p == review_page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+
+        {% if review_page < review_total_pages %}
+            <a href="{{ url_for('project_detail', project_id=project.project_id) }}?{{ rqp }}&review_page={{ review_page + 1 }}"
+               class="page-btn">Next ›</a>
+        {% else %}
+            <span class="page-btn disabled">Next ›</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
 {% else %}
     <div class="empty-state">
-        <p class="empty-title">No reviews yet</p>
-        <p class="empty-sub">Be the first to share your experience with this project.</p>
-        {% if session.student_id %}
-            <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
-                Submit Review
-            </a>
-        {% else %}
-            <a href="{{ url_for('login') }}" class="button">Log in to Review</a>
-        {% endif %}
+        <p class="empty-title">No reviews {% if review_term %}for {{ review_term }}{% else %}yet{% endif %}</p>
+        <p class="empty-sub">
+            {% if review_term %}
+                <a href="{{ url_for('project_detail', project_id=project.project_id) }}">Clear filter</a>
+                to see all reviews.
+            {% else %}
+                Be the first to share your experience with this project.
+                {% if session.student_id %}
+                    <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
+                        Submit Review
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="button">Log in to Review</a>
+                {% endif %}
+            {% endif %}
+        </p>
     </div>
 {% endif %}
 

@@ -58,13 +58,14 @@ While the app has no real user data, schema changes can be made freely by updati
 
 ## Schema
 
-> **Status: Finalized — April 23, 2026**
+> **Status: Current as of May 2026**
 
 ### Design Decisions
 
 - **Ratings as columns on reviews** (not a separate table) — simpler queries, criteria are fixed for the project scope. Criteria: difficulty, workload, team_dynamics, would_recommend.
+- **ai_use on reviews** — optional VARCHAR(50) column. Populated from a fixed dropdown; not free-text.
 - **students table stores onid_hash and pseudonym** — no raw ONID stored, no password stored. Pseudonym is generated on first login.
-- **term on reviews** — stores when the experience happened (e.g. "Spring 2026"), not when the review was submitted.
+- **term on reviews** — stores when the experience happened (e.g. "Spring 2026"), not when the review was submitted. Selected from a generated dropdown (`generate_terms()`) — free-text entry is no longer allowed.
 
 ---
 
@@ -74,11 +75,13 @@ While the app has no real user data, schema changes can be made freely by updati
 | Column | Type | Notes |
 |--------|------|-------|
 | project_id | int unsigned PK | auto_increment |
-| url | varchar(255) | Capstone portal link |
+| url | varchar(255) | Capstone portal link, unique |
 | title | varchar(255) | not null |
 | description | varchar(8000) | |
 | details | varchar(4000) | |
+| image_url | varchar(500) | thumbnail from Capstone portal (migration 005) |
 | last_scraped | timestamp | default current_timestamp |
+| updated_at | timestamp | auto-updated on change (migration 002) |
 
 ---
 
@@ -100,11 +103,13 @@ While the app has no real user data, schema changes can be made freely by updati
 | student_id | int unsigned FK | references students |
 | term | varchar(50) | e.g. "Spring 2026" — when experience happened |
 | review_text | varchar(4000) | qualitative feedback |
+| ai_use | varchar(50) | nullable — how AI was used during the project (migration 006) |
 | difficulty | int | 1-5 |
 | workload | int | 1-5 |
 | team_dynamics | int | 1-5 |
 | would_recommend | int | 1-5 |
 | created_at | timestamp | default current_timestamp |
+| updated_at | timestamp | auto-updated on change (migration 004) |
 
 ---
 
@@ -146,9 +151,9 @@ Unique constraint on (student_id, review_id) — one vote per student per review
 
 ### Open Questions
 
-- [ ] How do we handle pseudonyms before ONID auth is built? Generate on first review submission?
-- [ ] Do we need a way to flag reviews as inappropriate?
-- [ ] Should comments be flat only (replies to reviews) or nested (replies to comments)?
+- [x] How do we handle pseudonyms before ONID auth is built? — Resolved: generated on first OAuth login
+- [x] Should comments be flat only (replies to reviews) or nested (replies to comments)? — Resolved: flat only (replies to reviews)
+- [ ] Do we need a way to flag reviews as inappropriate? — Deferred post-course
 
 ---
 
@@ -157,6 +162,11 @@ Unique constraint on (student_id, review_id) — one vote per student per review
 | File | Description | Author | Date |
 |------|-------------|--------|------|
 | 001_initial_schema.sql | Initial schema — projects, students, reviews, helpfulness, comments | Henry Thong | April 2026 |
+| 002_rename_last_scraped_add_updated_at.sql | Add updated_at to projects | Henry Thong | April 2026 |
+| 003_deduplicate_projects_add_url_unique.sql | Add unique constraint on projects.url | Henry Thong | April 2026 |
+| 004_reviews_comments_add_updated_at.sql | Add updated_at to reviews and comments | Henry Thong | April 2026 |
+| 005_add_image_url_to_projects.sql | Add image_url column to projects | Caleb Richter | May 2026 |
+| 006_add_ai_use_to_reviews.sql | Add ai_use column to reviews | Caleb Richter | May 2026 |
 
 ---
 

@@ -16,13 +16,12 @@
 
     <form action="{{ url_for('submit_review', project_id=project_id) }}" method="post">
         <label for="term">Term</label>
-        <input
-            type="text"
-            id="term"
-            name="term"
-            placeholder="Example: Spring 2026"
-            required
-        >
+        <select id="term" name="term" required>
+            <option value="">Select a term</option>
+            {% for t in terms %}
+                <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+        </select>
 
         <label for="difficulty">Difficulty</label>
         <select id="difficulty" name="difficulty" required>
@@ -62,6 +61,16 @@
             <option value="3">3 - Neutral</option>
             <option value="4">4 - Agree</option>
             <option value="5">5 - Strongly agree</option>
+        </select>
+
+        <label for="ai_use">AI Use <span class="field-optional">(optional)</span></label>
+        <select id="ai_use" name="ai_use">
+            <option value="">Not specified</option>
+            <option value="Not used">Not used</option>
+            <option value="Research / learning">Research / learning</option>
+            <option value="Code generation">Code generation</option>
+            <option value="Debugging / troubleshooting">Debugging / troubleshooting</option>
+            <option value="Multiple / other">Multiple / other</option>
         </select>
 
         <label for="review_text">Review</label>
