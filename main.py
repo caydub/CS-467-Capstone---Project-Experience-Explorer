@@ -425,6 +425,42 @@ def auth_callback():
     return redirect(url_for('home'))
 
 
+# ------------------------------ Term Dropdown Helper ------------------------------ #
+
+def generate_terms(years_back: int = 5) -> list:
+    """Generate a list of academic quarter terms going back from the current quarter.
+
+    Returns:
+        list: Terms such as 'Spring 2026', 'Winter 2026', etc.
+    """
+    current_year = datetime.now().year
+    current_month = datetime.now().month
+
+    quarter_terms = ['Fall', 'Winter', 'Spring', 'Summer']
+
+    if 9 <= current_month <= 12:
+        start_index = 0
+    elif 1 <= current_month <= 3:
+        start_index = 1
+    elif 4 <= current_month <= 6:
+        start_index = 2
+    else:
+        start_index = 3
+
+    terms = []
+    year = current_year
+    quarter = start_index
+
+    for _ in range(years_back * 4):
+        terms.append(f'{quarter_terms[quarter]} {year}')
+        quarter -= 1
+        if quarter < 0:
+            quarter = 3
+            year -= 1
+
+    return terms
+
+
 # ------------------------------ Public Routes ------------------------------ #
 
 @app.route('/')
@@ -455,7 +491,6 @@ def home():
     filter_min_recommend = parse_rating_filter('min_recommend')
     filter_max_recommend = parse_rating_filter('max_recommend')
     filter_has_reviews = request.args.get('has_reviews') == '1'
-    filter_term = request.args.get('filter_term', '').strip() or None
 
     sort_options = {
         'title': 'p.title ASC',
@@ -516,12 +551,6 @@ def home():
     if filter_has_reviews:
         having_clauses.append('COUNT(r.review_id) > 0')
 
-    if filter_term:
-        where_clauses.append(
-            'EXISTS (SELECT 1 FROM reviews rt WHERE rt.project_id = p.project_id AND rt.term = %s)'
-        )
-        where_params.append(filter_term)
-
     where_sql = ('WHERE ' + ' AND '.join(where_clauses)) if where_clauses else ''
     having_sql = ('HAVING ' + ' AND '.join(having_clauses)) if having_clauses else ''
 
@@ -574,8 +603,6 @@ def home():
     cursor = conn.cursor()
     cursor.execute('SELECT COUNT(*) AS cnt FROM projects')
     total_count = cursor.fetchone()['cnt']
-    cursor.execute('SELECT DISTINCT term FROM reviews WHERE term IS NOT NULL ORDER BY term DESC')
-    available_terms = [row['term'] for row in cursor.fetchall()]
     cursor.execute(count_query, where_params + having_params)
     filtered_count = cursor.fetchone()['cnt']
     cursor.execute(paginated_query, where_params + having_params)
@@ -599,8 +626,6 @@ def home():
         filter_min_recommend=filter_min_recommend,
         filter_max_recommend=filter_max_recommend,
         filter_has_reviews=filter_has_reviews,
-        filter_term=filter_term,
-        available_terms=available_terms,
         filtered_count=filtered_count,
         total_count=total_count,
         page=page,
@@ -613,11 +638,19 @@ def home():
 def project_detail(project_id):
     """Render the project detail page with all reviews and comments."""
     review_sort = request.args.get('review_sort', 'helpful')
+    review_term = request.args.get('review_term', '').strip() or None
+    try:
+        review_page = max(1, int(request.args.get('review_page', 1) or 1))
+    except (ValueError, TypeError):
+        review_page = 1
+    reviews_per_page = 5
+
     review_order = (
         'helpful_count - not_helpful_count DESC, r.created_at DESC'
         if review_sort == 'helpful'
         else 'r.created_at DESC'
     )
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -644,10 +677,34 @@ def project_detail(project_id):
         conn.close()
         return "Project not found", 404
 
+    # distinct terms for filter dropdown
+    cursor.execute(
+        'SELECT DISTINCT term FROM reviews WHERE project_id = %s AND term IS NOT NULL ORDER BY term DESC',
+        (project_id,)
+    )
+    review_terms = [row['term'] for row in cursor.fetchall()]
+
+    # build review filter clause
+    review_where_clauses = ['r.project_id = %s']
+    review_params = [project_id]
+    if review_term:
+        review_where_clauses.append('r.term = %s')
+        review_params.append(review_term)
+    review_where_sql = 'WHERE ' + ' AND '.join(review_where_clauses)
+
+    # total count for pagination
+    cursor.execute(f'SELECT COUNT(*) AS cnt FROM reviews r {review_where_sql}', review_params)
+    review_count = cursor.fetchone()['cnt']
+    review_total_pages = max(1, (review_count + reviews_per_page - 1) // reviews_per_page)
+    review_page = min(review_page, review_total_pages)
+    review_offset = (review_page - 1) * reviews_per_page
+
     cursor.execute("""
         SELECT
             r.review_id,
+            r.student_id,
             r.review_text,
+            r.ai_use,
             r.term,
             r.difficulty,
             r.workload,
@@ -660,9 +717,15 @@ def project_detail(project_id):
              WHERE h.review_id = r.review_id AND h.value = -1) AS not_helpful_count
         FROM reviews r
         JOIN students s ON r.student_id = s.student_id
-        WHERE r.project_id = %s
+        {review_where_sql}
         ORDER BY {review_order}
-    """.format(review_order=review_order), (project_id,))
+        LIMIT {per_page} OFFSET {offset}
+    """.format(
+        review_where_sql=review_where_sql,
+        review_order=review_order,
+        per_page=reviews_per_page,
+        offset=review_offset,
+    ), review_params)
 
     reviews = cursor.fetchall()
 
@@ -678,21 +741,24 @@ def project_detail(project_id):
         )
         user_votes = {row['review_id']: row['value'] for row in cursor.fetchall()}
 
-    cursor.execute("""
-        SELECT
-            c.comment_id,
-            c.review_id,
-            c.comment_text,
-            c.created_at,
-            s.pseudonym
-        FROM comments c
-        JOIN students s ON c.student_id = s.student_id
-        JOIN reviews r ON c.review_id = r.review_id
-        WHERE r.project_id = %s
-        ORDER BY c.created_at ASC
-    """, (project_id,))
-
-    comments = cursor.fetchall()
+    # fetch comments only for visible reviews
+    comments = []
+    if reviews:
+        review_ids = [r['review_id'] for r in reviews]
+        placeholders = ', '.join(['%s'] * len(review_ids))
+        cursor.execute(f"""
+            SELECT
+                c.comment_id,
+                c.review_id,
+                c.comment_text,
+                c.created_at,
+                s.pseudonym
+            FROM comments c
+            JOIN students s ON c.student_id = s.student_id
+            WHERE c.review_id IN ({placeholders})
+            ORDER BY c.created_at ASC
+        """, review_ids)
+        comments = cursor.fetchall()
 
     conn.close()
 
@@ -703,6 +769,12 @@ def project_detail(project_id):
         comments=comments,
         user_votes=user_votes,
         review_sort=review_sort,
+        review_term=review_term,
+        review_terms=review_terms,
+        review_count=review_count,
+        review_page=review_page,
+        review_total_pages=review_total_pages,
+        reviews_per_page=reviews_per_page,
     )
 
 
@@ -711,59 +783,103 @@ def project_detail(project_id):
 def submit_review(project_id):
     """Display and process the review submission page."""
     if request.method == 'POST':
-        term = request.form.get('term')
+        term = request.form.get('term', '').strip()
+        ai_use = request.form.get('ai_use', '').strip() or None
 
         try:
             difficulty = int(request.form.get('difficulty'))
             workload = int(request.form.get('workload'))
             team_dynamics = int(request.form.get('team_dynamics'))
             would_recommend = int(request.form.get('would_recommend'))
-
-            ratings = [
-                difficulty,
-                workload,
-                team_dynamics,
-                would_recommend
-            ]
-
-            if not all(1 <= rating <= 5 for rating in ratings):
+            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            if not all(1 <= r <= 5 for r in ratings):
                 return 'Ratings must be between 1 and 5', 400
-
         except (TypeError, ValueError):
             return 'Invalid rating value', 400
 
-        review_text = request.form.get('review_text')
+        review_text = request.form.get('review_text', '').strip()
 
         conn = get_db_connection()
-
         try:
             cursor = conn.cursor()
-
             cursor.execute("""
                 INSERT INTO reviews
                     (project_id, student_id, term, difficulty, workload,
-                     team_dynamics, would_recommend, review_text)
+                     team_dynamics, would_recommend, review_text, ai_use)
                 VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s)
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                project_id,
-                session['student_id'],
-                term,
-                difficulty,
-                workload,
-                team_dynamics,
-                would_recommend,
-                review_text
+                project_id, session['student_id'], term,
+                difficulty, workload, team_dynamics, would_recommend,
+                review_text, ai_use,
             ))
-
             conn.commit()
-
         finally:
             conn.close()
 
         return redirect(url_for('project_detail', project_id=project_id))
 
-    return render_template('submit_review.html', project_id=project_id)
+    terms = generate_terms()
+    return render_template('submit_review.html', project_id=project_id, terms=terms)
+
+
+@app.route('/review/<int:review_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_review(review_id):
+    """Display and process the review edit page."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM reviews WHERE review_id = %s', (review_id,))
+    review = cursor.fetchone()
+
+    if review is None:
+        conn.close()
+        return 'Review not found', 404
+
+    if review['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    if request.method == 'POST':
+        term = request.form.get('term', '').strip()
+        ai_use = request.form.get('ai_use', '').strip() or None
+
+        try:
+            difficulty = int(request.form.get('difficulty'))
+            workload = int(request.form.get('workload'))
+            team_dynamics = int(request.form.get('team_dynamics'))
+            would_recommend = int(request.form.get('would_recommend'))
+            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            if not all(1 <= r <= 5 for r in ratings):
+                conn.close()
+                return 'Ratings must be between 1 and 5', 400
+        except (TypeError, ValueError):
+            conn.close()
+            return 'Invalid rating value', 400
+
+        review_text = request.form.get('review_text', '').strip()
+        project_id = review['project_id']
+
+        try:
+            cursor.execute("""
+                UPDATE reviews
+                SET term = %s, difficulty = %s, workload = %s,
+                    team_dynamics = %s, would_recommend = %s,
+                    review_text = %s, ai_use = %s
+                WHERE review_id = %s
+            """, (
+                term, difficulty, workload, team_dynamics, would_recommend,
+                review_text, ai_use, review_id,
+            ))
+            conn.commit()
+        finally:
+            conn.close()
+
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    conn.close()
+    terms = generate_terms()
+    return render_template('edit_review.html', review=review, terms=terms)
 
 
 @app.route('/review/<int:review_id>/comment', methods=['POST'])

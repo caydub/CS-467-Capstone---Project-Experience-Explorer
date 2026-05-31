@@ -1,0 +1,2 @@
+ALTER TABLE reviews
+    ADD COLUMN ai_use VARCHAR(50) DEFAULT NULL AFTER review_text;

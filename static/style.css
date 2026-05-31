@@ -712,7 +712,7 @@ body {
 }
 
 /* ================================================================
-   Reviews header (count + sort toggle)
+   Reviews header (count + sort toggle + term filter)
    ================================================================ */
 .reviews-header {
     display: flex;
@@ -727,6 +727,48 @@ body {
     margin: 0;
     font-size: 1.2rem;
     font-weight: 700;
+}
+
+.review-total-count {
+    font-weight: 400;
+    color: #888;
+}
+
+.review-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.review-term-form {
+    margin: 0;
+}
+
+.review-term-select {
+    height: 34px;
+    padding: 0 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    background: white;
+    color: #555;
+}
+
+.review-filter-active {
+    font-size: 0.875rem;
+    color: #888;
+    margin: -0.25rem 0 0.75rem;
+}
+
+.review-filter-active a {
+    color: #e74c3c;
+    text-decoration: none;
+}
+
+.review-filter-active a:hover {
+    text-decoration: underline;
 }
 
 .sort-toggle {
@@ -763,6 +805,29 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
+}
+
+.edit-review-btn {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #3498db;
+    text-decoration: none;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid #cce4f6;
+    border-radius: 5px;
+    background: #f0f8ff;
+    transition: background-color 0.15s;
+}
+
+.edit-review-btn:hover {
+    background: #daeefb;
+    text-decoration: none;
+}
+
+.ai-use-tag {
+    font-size: 0.8rem;
+    color: #777;
+    margin: 0.25rem 0 0.5rem;
 }
 
 .avatar-badge {
@@ -947,6 +1012,12 @@ body {
     font-size: 0.8rem;
     color: #aaa;
     text-align: right;
+}
+
+.field-optional {
+    font-size: 0.8rem;
+    color: #aaa;
+    font-weight: 400;
 }
 
 /* ================================================================

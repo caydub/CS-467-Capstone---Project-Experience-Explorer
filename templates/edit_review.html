@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Review{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Edit Your Review</h1>
+    <p>Update your experience with this capstone project.</p>
+</section>
+
+<section class="form-card">
+    <div class="login-prompt">
+        <strong>Signed in as {{ session['pseudonym'] }}</strong>
+        <p>Changes will be saved under your anonymous reviewer pseudonym.</p>
+    </div>
+
+    <form action="{{ url_for('edit_review', review_id=review.review_id) }}" method="post">
+        <label for="term">Term</label>
+        <select id="term" name="term" required>
+            <option value="">Select a term</option>
+            {% for t in terms %}
+                <option value="{{ t }}" {% if review.term == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty" name="difficulty" required>
+            <option value="">Select a rating</option>
+            <option value="1" {% if review.difficulty == 1 %}selected{% endif %}>1 - Very easy</option>
+            <option value="2" {% if review.difficulty == 2 %}selected{% endif %}>2 - Easy</option>
+            <option value="3" {% if review.difficulty == 3 %}selected{% endif %}>3 - Moderate</option>
+            <option value="4" {% if review.difficulty == 4 %}selected{% endif %}>4 - Hard</option>
+            <option value="5" {% if review.difficulty == 5 %}selected{% endif %}>5 - Very hard</option>
+        </select>
+
+        <label for="workload">Workload</label>
+        <select id="workload" name="workload" required>
+            <option value="">Select a rating</option>
+            <option value="1" {% if review.workload == 1 %}selected{% endif %}>1 - Very light</option>
+            <option value="2" {% if review.workload == 2 %}selected{% endif %}>2 - Light</option>
+            <option value="3" {% if review.workload == 3 %}selected{% endif %}>3 - Moderate</option>
+            <option value="4" {% if review.workload == 4 %}selected{% endif %}>4 - Heavy</option>
+            <option value="5" {% if review.workload == 5 %}selected{% endif %}>5 - Very heavy</option>
+        </select>
+
+        <label for="team_dynamics">Team Dynamics</label>
+        <select id="team_dynamics" name="team_dynamics" required>
+            <option value="">Select a rating</option>
+            <option value="1" {% if review.team_dynamics == 1 %}selected{% endif %}>1 - Very poor</option>
+            <option value="2" {% if review.team_dynamics == 2 %}selected{% endif %}>2 - Poor</option>
+            <option value="3" {% if review.team_dynamics == 3 %}selected{% endif %}>3 - Average</option>
+            <option value="4" {% if review.team_dynamics == 4 %}selected{% endif %}>4 - Good</option>
+            <option value="5" {% if review.team_dynamics == 5 %}selected{% endif %}>5 - Excellent</option>
+        </select>
+
+        <label for="would_recommend">Would Recommend</label>
+        <select id="would_recommend" name="would_recommend" required>
+            <option value="">Select a rating</option>
+            <option value="1" {% if review.would_recommend == 1 %}selected{% endif %}>1 - Strongly disagree</option>
+            <option value="2" {% if review.would_recommend == 2 %}selected{% endif %}>2 - Disagree</option>
+            <option value="3" {% if review.would_recommend == 3 %}selected{% endif %}>3 - Neutral</option>
+            <option value="4" {% if review.would_recommend == 4 %}selected{% endif %}>4 - Agree</option>
+            <option value="5" {% if review.would_recommend == 5 %}selected{% endif %}>5 - Strongly agree</option>
+        </select>
+
+        <label for="ai_use">AI Use <span class="field-optional">(optional)</span></label>
+        <select id="ai_use" name="ai_use">
+            <option value="" {% if not review.ai_use %}selected{% endif %}>Not specified</option>
+            <option value="Not used" {% if review.ai_use == 'Not used' %}selected{% endif %}>Not used</option>
+            <option value="Research / learning" {% if review.ai_use == 'Research / learning' %}selected{% endif %}>Research / learning</option>
+            <option value="Code generation" {% if review.ai_use == 'Code generation' %}selected{% endif %}>Code generation</option>
+            <option value="Debugging / troubleshooting" {% if review.ai_use == 'Debugging / troubleshooting' %}selected{% endif %}>Debugging / troubleshooting</option>
+            <option value="Multiple / other" {% if review.ai_use == 'Multiple / other' %}selected{% endif %}>Multiple / other</option>
+        </select>
+
+        <label for="review_text">Review</label>
+        <textarea
+            id="review_text"
+            name="review_text"
+            rows="6"
+            maxlength="4000"
+            required
+        >{{ review.review_text or '' }}</textarea>
+        <span id="char-count" class="char-count">{{ (review.review_text or '') | length }} / 4000</span>
+
+        <button type="submit" class="button">Save Changes</button>
+    </form>
+
+    <p>
+        <a href="{{ url_for('project_detail', project_id=review.project_id) }}">
+            Cancel
+        </a>
+    </p>
+</section>
+
+<script>
+    var textarea = document.getElementById('review_text');
+    var counter = document.getElementById('char-count');
+    textarea.addEventListener('input', function () {
+        counter.textContent = this.value.length + ' / 4000';
+    });
+</script>
+{% endblock %}
