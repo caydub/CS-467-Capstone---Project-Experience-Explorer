@@ -71,15 +71,16 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 **Live and functional.** Core feature set is complete.
 
 **Built:**
-- Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion)
-- Project detail pages with paginated, term-filterable reviews
+- Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion, active filter chips with individual removal)
+- Project detail pages with paginated, term-filterable reviews — link to Capstone portal for each project
 - Google OAuth login restricted to @oregonstate.edu accounts
-- Submit and edit reviews (term dropdown, four rating criteria — complexity, workload, team dynamics, would recommend — plus optional AI use field)
+- Submit, edit, and delete reviews (term dropdown, four rating criteria, optional AI use field, 50-char minimum)
+- One review per student per project enforced at DB level
 - Helpfulness voting (👍/👎) on both reviews and comments
-- Comments on reviews, sorted by helpfulness
-- Flash messages for review submission, edits, and comments
-- Custom 404 and 500 error pages
-- Renamed `difficulty` → `complexity` across DB and entire codebase (migration 008)
+- Submit, edit, and delete comments, sorted by helpfulness score
+- My Activity page — all your reviews and comments in one place
+- Delete account — removes all associated data via FK cascade
+- Flash messages, custom 404/500 error pages, mobile responsive layout
 - Thumbnail images scraped from the Capstone portal
 
 **Planned / deferred:**

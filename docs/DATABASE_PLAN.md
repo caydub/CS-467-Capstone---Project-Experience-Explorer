@@ -169,6 +169,7 @@ Unique constraint on (student_id, review_id) — one vote per student per review
 | 006_add_ai_use_to_reviews.sql | Add ai_use column to reviews | Caleb Richter | May 2026 |
 | 007_add_comment_helpfulness.sql | Add comment_helpfulness table for comment voting | Caleb Richter | May 2026 |
 | 008_rename_difficulty_to_complexity.sql | Rename reviews.difficulty to reviews.complexity | Caleb Richter | May 2026 |
+| 009_unique_student_project_review.sql | Add unique constraint (student_id, project_id) on reviews | Caleb Richter | May 2026 |
 
 ---
 
