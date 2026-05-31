@@ -78,6 +78,7 @@
             id="review_text"
             name="review_text"
             rows="6"
+            minlength="50"
             maxlength="4000"
             required
         >{{ review.review_text or '' }}</textarea>
@@ -86,11 +87,17 @@
         <button type="submit" class="button">Save Changes</button>
     </form>
 
-    <p>
-        <a href="{{ url_for('project_detail', project_id=review.project_id) }}">
-            Cancel
-        </a>
-    </p>
+    <div class="edit-review-footer">
+        <a href="{{ url_for('project_detail', project_id=review.project_id) }}">Cancel</a>
+        <form method="POST"
+              action="{{ url_for('delete_review', review_id=review.review_id) }}"
+              class="delete-form">
+            <button type="submit" class="delete-btn"
+                    onclick="return confirm('Delete your review? This cannot be undone.')">
+                Delete review
+            </button>
+        </form>
+    </div>
 </section>
 
 <script>

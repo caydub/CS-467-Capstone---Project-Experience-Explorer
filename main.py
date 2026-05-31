@@ -655,6 +655,7 @@ def project_detail(project_id):
             p.description,
             p.details,
             p.image_url,
+            p.url,
             AVG(r.complexity) AS complexity,
             AVG(r.workload) AS workload,
             AVG(r.team_dynamics) AS team_dynamics,
@@ -790,7 +791,24 @@ def project_detail(project_id):
 @app.route('/project/<int:project_id>/submit-review', methods=['GET', 'POST'])
 @login_required
 def submit_review(project_id):
-    """Display and process the review submission page."""
+    """Display and process the review submission page.
+
+    Redirects to the edit page if the student has already reviewed this project.
+    """
+    # check for an existing review before showing the form or processing a submission
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT review_id FROM reviews WHERE project_id = %s AND student_id = %s',
+        (project_id, session['student_id'])
+    )
+    existing = cursor.fetchone()
+    conn.close()
+
+    if existing:
+        flash('You\'ve already reviewed this project — edit your existing review below.', 'error')
+        return redirect(url_for('edit_review', review_id=existing['review_id']))
+
     if request.method == 'POST':
         term = request.form.get('term', '').strip()
         ai_use = request.form.get('ai_use', '').strip() or None
@@ -807,6 +825,10 @@ def submit_review(project_id):
             return 'Invalid rating value', 400
 
         review_text = request.form.get('review_text', '').strip()
+        if len(review_text) < 50:
+            flash('Review must be at least 50 characters.', 'error')
+            terms = generate_terms()
+            return render_template('submit_review.html', project_id=project_id, terms=terms)
 
         conn = get_db_connection()
         try:
@@ -868,6 +890,12 @@ def edit_review(review_id):
             return 'Invalid rating value', 400
 
         review_text = request.form.get('review_text', '').strip()
+        if len(review_text) < 50:
+            conn.close()
+            flash('Review must be at least 50 characters.', 'error')
+            terms = generate_terms()
+            return render_template('edit_review.html', review=review, terms=terms)
+
         project_id = review['project_id']
 
         try:
@@ -1026,6 +1054,119 @@ def vote_comment(comment_id):
         conn.close()
 
     return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/review/<int:review_id>/delete', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    """Delete a review (owner only). Cascades to helpfulness votes and comments."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT student_id, project_id FROM reviews WHERE review_id = %s', (review_id,))
+    review = cursor.fetchone()
+
+    if review is None:
+        conn.close()
+        return 'Review not found', 404
+
+    if review['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    project_id = review['project_id']
+
+    try:
+        cursor.execute('DELETE FROM reviews WHERE review_id = %s', (review_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    flash('Your review has been deleted.', 'success')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    """Delete a comment (owner only). Cascades to comment helpfulness votes."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT c.student_id, r.project_id FROM comments c'
+        ' JOIN reviews r ON c.review_id = r.review_id'
+        ' WHERE c.comment_id = %s',
+        (comment_id,)
+    )
+    comment = cursor.fetchone()
+
+    if comment is None:
+        conn.close()
+        return 'Comment not found', 404
+
+    if comment['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    project_id = comment['project_id']
+
+    try:
+        cursor.execute('DELETE FROM comments WHERE comment_id = %s', (comment_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    flash('Comment deleted.', 'success')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/my-activity')
+@login_required
+def my_activity():
+    """Show all reviews and comments submitted by the logged-in student."""
+    student_id = session['student_id']
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            r.review_id,
+            r.project_id,
+            r.term,
+            r.complexity,
+            r.workload,
+            r.team_dynamics,
+            r.would_recommend,
+            r.review_text,
+            r.ai_use,
+            r.created_at,
+            p.title AS project_title
+        FROM reviews r
+        JOIN projects p ON r.project_id = p.project_id
+        WHERE r.student_id = %s
+        ORDER BY r.created_at DESC
+    """, (student_id,))
+    reviews = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            c.comment_id,
+            c.comment_text,
+            c.created_at,
+            c.review_id,
+            r.project_id,
+            p.title AS project_title,
+            s.pseudonym AS reviewer_pseudonym
+        FROM comments c
+        JOIN reviews r ON c.review_id = r.review_id
+        JOIN projects p ON r.project_id = p.project_id
+        JOIN students s ON r.student_id = s.student_id
+        WHERE c.student_id = %s
+        ORDER BY c.created_at DESC
+    """, (student_id,))
+    comments = cursor.fetchall()
+
+    conn.close()
+    return render_template('my_activity.html', reviews=reviews, comments=comments)
 
 
 # ------------------------------ Error Handlers ------------------------------ #

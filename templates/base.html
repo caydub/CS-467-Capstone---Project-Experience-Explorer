@@ -19,6 +19,7 @@
             <div class="nav-links">
                 <a href="/">Browse Projects</a>
                 {% if session.student_id %}
+                    <a href="{{ url_for('my_activity') }}">My Activity</a>
                     <span class="nav-pseudonym">{{ session.pseudonym }}</span>
                     <a href="{{ url_for('logout') }}">Log out</a>
                 {% else %}
