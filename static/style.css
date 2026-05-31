@@ -297,6 +297,15 @@ body {
     background: white;
 }
 
+.filter-section--wide {
+    grid-column: span 2;
+}
+
+.filter-section--wide select {
+    width: 100%;
+    max-width: 320px;
+}
+
 .filter-section--checkbox {
     justify-content: flex-end;
     padding-top: 1.15rem;

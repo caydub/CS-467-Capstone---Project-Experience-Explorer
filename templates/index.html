@@ -10,6 +10,7 @@
 </div>
 
 {% set active_filter_count =
+    (1 if sort_option != 'title' else 0) +
     (1 if filter_min_difficulty else 0) +
     (1 if filter_max_difficulty else 0) +
     (1 if filter_min_workload else 0) +
@@ -18,37 +19,11 @@
     (1 if filter_max_team_dynamics else 0) +
     (1 if filter_min_recommend else 0) +
     (1 if filter_max_recommend else 0) +
-    (1 if filter_has_reviews else 0) +
-    (1 if filter_term else 0) %}
+    (1 if filter_has_reviews else 0) %}
 
 <form class="search-form" method="GET" action="/">
     <div class="search-bar">
         <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
-
-        <select name="sort">
-            <optgroup label="General">
-                <option value="title" {% if sort_option == 'title' %}selected{% endif %}>Alphabetical</option>
-                <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>Most Reviews</option>
-                <option value="avg_score" {% if sort_option == 'avg_score' %}selected{% endif %}>Highest Avg Score</option>
-            </optgroup>
-            <optgroup label="Difficulty">
-                <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>Difficulty: High → Low</option>
-                <option value="lowest_difficulty" {% if sort_option == 'lowest_difficulty' %}selected{% endif %}>Difficulty: Low → High</option>
-            </optgroup>
-            <optgroup label="Workload">
-                <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>Workload: High → Low</option>
-                <option value="lowest_workload" {% if sort_option == 'lowest_workload' %}selected{% endif %}>Workload: Low → High</option>
-            </optgroup>
-            <optgroup label="Team Dynamics">
-                <option value="highest_team_dynamics" {% if sort_option == 'highest_team_dynamics' %}selected{% endif %}>Team Dynamics: High → Low</option>
-                <option value="lowest_team_dynamics" {% if sort_option == 'lowest_team_dynamics' %}selected{% endif %}>Team Dynamics: Low → High</option>
-            </optgroup>
-            <optgroup label="Recommendation">
-                <option value="highest_recommendation" {% if sort_option == 'highest_recommendation' %}selected{% endif %}>Recommendation: High → Low</option>
-                <option value="lowest_recommendation" {% if sort_option == 'lowest_recommendation' %}selected{% endif %}>Recommendation: Low → High</option>
-            </optgroup>
-        </select>
-
         <button type="submit" class="button">Apply</button>
     </div>
 
@@ -58,13 +33,40 @@
             <span class="toggle-arrow">▼</span>
         </button>
         {% if active_filter_count %}
-        <a href="/?search={{ search_query }}&sort={{ sort_option }}" class="clear-filters">Clear all filters</a>
+        <a href="/?search={{ search_query }}" class="clear-filters">Clear all filters</a>
         {% endif %}
     </div>
 
     <div class="filter-panel" id="filter-panel" {% if not active_filter_count %}style="display:none"{% endif %}>
 
         <div class="filter-grid">
+
+            <div class="filter-section filter-section--wide">
+                <span class="filter-section-label">Sort by</span>
+                <select name="sort">
+                    <optgroup label="General">
+                        <option value="title" {% if sort_option == 'title' %}selected{% endif %}>Alphabetical</option>
+                        <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>Most Reviews</option>
+                        <option value="avg_score" {% if sort_option == 'avg_score' %}selected{% endif %}>Highest Avg Score</option>
+                    </optgroup>
+                    <optgroup label="Difficulty">
+                        <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>Difficulty: High → Low</option>
+                        <option value="lowest_difficulty" {% if sort_option == 'lowest_difficulty' %}selected{% endif %}>Difficulty: Low → High</option>
+                    </optgroup>
+                    <optgroup label="Workload">
+                        <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>Workload: High → Low</option>
+                        <option value="lowest_workload" {% if sort_option == 'lowest_workload' %}selected{% endif %}>Workload: Low → High</option>
+                    </optgroup>
+                    <optgroup label="Team Dynamics">
+                        <option value="highest_team_dynamics" {% if sort_option == 'highest_team_dynamics' %}selected{% endif %}>Team Dynamics: High → Low</option>
+                        <option value="lowest_team_dynamics" {% if sort_option == 'lowest_team_dynamics' %}selected{% endif %}>Team Dynamics: Low → High</option>
+                    </optgroup>
+                    <optgroup label="Recommendation">
+                        <option value="highest_recommendation" {% if sort_option == 'highest_recommendation' %}selected{% endif %}>Recommendation: High → Low</option>
+                        <option value="lowest_recommendation" {% if sort_option == 'lowest_recommendation' %}selected{% endif %}>Recommendation: Low → High</option>
+                    </optgroup>
+                </select>
+            </div>
 
             <div class="filter-section">
                 <span class="filter-section-label">Difficulty</span>
@@ -140,16 +142,6 @@
                         {% endfor %}
                     </select>
                 </div>
-            </div>
-
-            <div class="filter-section">
-                <span class="filter-section-label">Term</span>
-                <select name="filter_term">
-                    <option value="">Any term</option>
-                    {% for term in available_terms %}
-                    <option value="{{ term }}" {% if filter_term == term %}selected{% endif %}>{{ term }}</option>
-                    {% endfor %}
-                </select>
             </div>
 
             <div class="filter-section filter-section--checkbox">
@@ -247,7 +239,7 @@
     </div>
 {% endif %}
 
-{% set qp %}search={{ search_query }}&sort={{ sort_option }}{% if filter_min_difficulty %}&min_difficulty={{ filter_min_difficulty }}{% endif %}{% if filter_max_difficulty %}&max_difficulty={{ filter_max_difficulty }}{% endif %}{% if filter_min_workload %}&min_workload={{ filter_min_workload }}{% endif %}{% if filter_max_workload %}&max_workload={{ filter_max_workload }}{% endif %}{% if filter_min_team_dynamics %}&min_team_dynamics={{ filter_min_team_dynamics }}{% endif %}{% if filter_max_team_dynamics %}&max_team_dynamics={{ filter_max_team_dynamics }}{% endif %}{% if filter_min_recommend %}&min_recommend={{ filter_min_recommend }}{% endif %}{% if filter_max_recommend %}&max_recommend={{ filter_max_recommend }}{% endif %}{% if filter_has_reviews %}&has_reviews=1{% endif %}{% if filter_term %}&filter_term={{ filter_term }}{% endif %}{% endset %}
+{% set qp %}search={{ search_query }}&sort={{ sort_option }}{% if filter_min_difficulty %}&min_difficulty={{ filter_min_difficulty }}{% endif %}{% if filter_max_difficulty %}&max_difficulty={{ filter_max_difficulty }}{% endif %}{% if filter_min_workload %}&min_workload={{ filter_min_workload }}{% endif %}{% if filter_max_workload %}&max_workload={{ filter_max_workload }}{% endif %}{% if filter_min_team_dynamics %}&min_team_dynamics={{ filter_min_team_dynamics }}{% endif %}{% if filter_max_team_dynamics %}&max_team_dynamics={{ filter_max_team_dynamics }}{% endif %}{% if filter_min_recommend %}&min_recommend={{ filter_min_recommend }}{% endif %}{% if filter_max_recommend %}&max_recommend={{ filter_max_recommend }}{% endif %}{% if filter_has_reviews %}&has_reviews=1{% endif %}{% endset %}
 
 {% if total_pages > 1 %}
 <div class="pagination">
