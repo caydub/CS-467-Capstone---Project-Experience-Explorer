@@ -68,18 +68,21 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 
 ## Project Status
 
-| Week | Status |
-|------|--------|
-| Week 1 | Infrastructure initialized — GCP, Cloud SQL, App Engine, GitHub CI/CD. Project plan submitted. |
-| Week 2 | Schema finalized and deployed to Cloud SQL. 28 CS467 projects scraped and seeded. Flask routes wired to database. Live app showing real project data. PR1 submitted. |
-| Week 3 | Google OAuth 2.0 integrated (restricted to OSU emails). Helpfulness voting and comment system built. Filtering, avg-score sort, and pagination added to browse page. PR2 submitted. |
-| Week 4 | Thumbnails from Capstone portal added to project cards. Pagination, structured description rendering, and UI polish. PR3 submitted. |
-| Week 5 | Browse page filter panel overhaul (min/max ranges, collapsible, sort inside panel). Review editing, AI use field, review pagination and term filtering, comment voting. PR4 submitted. |
-| Week 6 | — |
-| Week 7 | — |
-| Week 8 | — |
-| Week 9 | — |
-| Week 10 | Final demo and archive |
+**Live and functional.** Core feature set is complete.
+
+**Built:**
+- Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion)
+- Project detail pages with paginated, term-filterable reviews
+- Google OAuth login restricted to @oregonstate.edu accounts
+- Submit and edit reviews (term dropdown, four rating criteria, optional AI use field)
+- Helpfulness voting (👍/👎) on both reviews and comments
+- Comments on reviews
+- Thumbnail images scraped from the Capstone portal
+
+**Planned / deferred:**
+- Rename `difficulty` → `complexity` across DB and codebase
+- Flag / report inappropriate reviews
+- Admin moderation panel
 
 ---
 
