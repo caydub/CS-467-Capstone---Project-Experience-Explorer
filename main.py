@@ -10,7 +10,7 @@ from authlib.integrations.flask_client import OAuth
 from bs4 import BeautifulSoup, NavigableString
 from bs4 import Tag as BSTag
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from markupsafe import Markup, escape
 
 load_dotenv()
@@ -826,6 +826,7 @@ def submit_review(project_id):
         finally:
             conn.close()
 
+        flash('Your review has been submitted.', 'success')
         return redirect(url_for('project_detail', project_id=project_id))
 
     terms = generate_terms()
@@ -884,6 +885,7 @@ def edit_review(review_id):
         finally:
             conn.close()
 
+        flash('Your review has been updated.', 'success')
         return redirect(url_for('project_detail', project_id=project_id))
 
     conn.close()
@@ -922,6 +924,7 @@ def submit_comment(review_id):
     finally:
         conn.close()
 
+    flash('Comment posted.', 'success')
     return redirect(url_for('project_detail', project_id=project_id))
 
 
@@ -1023,6 +1026,14 @@ def vote_comment(comment_id):
         conn.close()
 
     return redirect(url_for('project_detail', project_id=project_id))
+
+
+# ------------------------------ Error Handlers ------------------------------ #
+
+@app.errorhandler(404)
+def not_found(e):
+    """Render the custom 404 page."""
+    return render_template('404.html'), 404
 
 
 if __name__ == '__main__':

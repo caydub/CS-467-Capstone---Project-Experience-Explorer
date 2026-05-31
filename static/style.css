@@ -1047,6 +1047,71 @@ body {
 }
 
 /* ================================================================
+   Flash messages
+   ================================================================ */
+.flash-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0.75rem auto 0;
+}
+
+.flash {
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+}
+
+.flash--success {
+    background: #eafaf1;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
+}
+
+.flash--error {
+    background: #fdf2f2;
+    color: #c0392b;
+    border: 1px solid #f5c6c6;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+.site-footer {
+    margin-top: 3rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid #e8e8e8;
+    background: #fff;
+}
+
+.footer-inner {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #999;
+}
+
+.footer-inner a {
+    color: #999;
+    text-decoration: none;
+}
+
+.footer-inner a:hover {
+    color: #555;
+    text-decoration: underline;
+}
+
+.footer-sep {
+    color: #ccc;
+}
+
+/* ================================================================
    Responsive
    ================================================================ */
 @media (max-width: 700px) {
