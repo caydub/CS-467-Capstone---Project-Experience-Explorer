@@ -118,6 +118,20 @@
 
 <a href="{{ url_for('home') }}" class="button" style="margin-top: 1rem;">&#8592; Browse Projects</a>
 
+<div class="danger-zone">
+    <h3 class="danger-zone-title">Danger Zone</h3>
+    <p class="danger-zone-desc">
+        Permanently delete your account. This removes all your reviews, comments, and votes.
+        This action cannot be undone.
+    </p>
+    <form method="POST" action="{{ url_for('delete_account') }}">
+        <button type="submit" class="danger-btn"
+                onclick="return confirm('Delete your account and all associated data? This cannot be undone.')">
+            Delete My Account
+        </button>
+    </form>
+</div>
+
 <script>
     document.querySelectorAll('.review-text').forEach(function (el) {
         if (el.scrollHeight > el.clientHeight + 2) {

@@ -63,9 +63,15 @@
 </a>
 {% endif %}
 
+{% if session.student_id and user_review_id %}
+<a href="{{ url_for('edit_review', review_id=user_review_id) }}" class="button">
+    Edit Your Review
+</a>
+{% else %}
 <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
     Submit Review
 </a>
+{% endif %}
 
 {# ---- Reviews header ---- #}
 <div class="reviews-header">

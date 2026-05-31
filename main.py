@@ -724,6 +724,17 @@ def project_detail(project_id):
 
     reviews = cursor.fetchall()
 
+    # check if the logged-in user has already reviewed this project
+    user_review_id = None
+    if 'student_id' in session:
+        cursor.execute(
+            'SELECT review_id FROM reviews WHERE project_id = %s AND student_id = %s',
+            (project_id, session['student_id'])
+        )
+        ur = cursor.fetchone()
+        if ur:
+            user_review_id = ur['review_id']
+
     # build a {review_id: vote_value} map for the logged-in user
     user_votes = {}
     if 'student_id' in session and reviews:
@@ -785,6 +796,7 @@ def project_detail(project_id):
         review_page=review_page,
         review_total_pages=review_total_pages,
         reviews_per_page=reviews_per_page,
+        user_review_id=user_review_id,
     )
 
 
@@ -1212,6 +1224,28 @@ def my_activity():
 
     conn.close()
     return render_template('my_activity.html', reviews=reviews, comments=comments)
+
+
+@app.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    """Delete the logged-in student's account and all associated data.
+
+    FK cascades handle reviews, helpfulness votes, comments, and comment votes.
+    """
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM students WHERE student_id = %s', (student_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    session.clear()
+    flash('Your account and all associated data have been permanently deleted.', 'success')
+    return redirect(url_for('home'))
 
 
 # ------------------------------ Error Handlers ------------------------------ #

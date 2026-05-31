@@ -934,6 +934,44 @@ body {
     font-size: 0.9rem;
 }
 
+.danger-zone {
+    margin-top: 3rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #f5c6c6;
+    border-radius: 8px;
+    background: #fff8f8;
+}
+
+.danger-zone-title {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: #c0392b;
+}
+
+.danger-zone-desc {
+    font-size: 0.875rem;
+    color: #888;
+    margin: 0 0 1rem;
+}
+
+.danger-btn {
+    background: none;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.danger-btn:hover {
+    background: #e74c3c;
+    color: white;
+}
+
 .ai-use-tag {
     font-size: 0.8rem;
     color: #777;
