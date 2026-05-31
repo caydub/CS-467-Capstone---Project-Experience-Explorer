@@ -190,15 +190,19 @@
                             <span class="comment-time">{{ comment.created_at | relative_time }}</span>
                         </p>
                         {% if session.student_id and session.student_id == comment.student_id %}
-                        <form method="POST"
-                              action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
-                              class="delete-form">
-                            <input type="hidden" name="project_id" value="{{ project.project_id }}">
-                            <button type="submit" class="delete-btn delete-btn--small"
-                                    onclick="return confirm('Delete this comment?')">
-                                Delete
-                            </button>
-                        </form>
+                        <div class="comment-owner-actions">
+                            <a href="{{ url_for('edit_comment', comment_id=comment.comment_id) }}"
+                               class="delete-btn delete-btn--small">Edit</a>
+                            <form method="POST"
+                                  action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
+                                  class="delete-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <button type="submit" class="delete-btn delete-btn--small"
+                                        onclick="return confirm('Delete this comment?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
                         {% endif %}
                     </div>
                     <p>{{ comment.comment_text }}</p>

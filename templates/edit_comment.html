@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Comment{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Edit Comment</h1>
+</section>
+
+<section class="form-card">
+    <div class="login-prompt">
+        <strong>Signed in as {{ session['pseudonym'] }}</strong>
+    </div>
+
+    <form action="{{ url_for('edit_comment', comment_id=comment.comment_id) }}" method="post">
+        <label for="comment_text">Comment</label>
+        <textarea
+            id="comment_text"
+            name="comment_text"
+            rows="4"
+            maxlength="2000"
+            required
+        >{{ comment.comment_text or '' }}</textarea>
+        <span id="char-count" class="char-count">{{ (comment.comment_text or '') | length }} / 2000</span>
+
+        <button type="submit" class="button">Save</button>
+    </form>
+
+    <div class="edit-review-footer">
+        <a href="{{ url_for('project_detail', project_id=comment.project_id) }}">Cancel</a>
+        <form method="POST"
+              action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
+              class="delete-form">
+            <input type="hidden" name="project_id" value="{{ comment.project_id }}">
+            <button type="submit" class="delete-btn"
+                    onclick="return confirm('Delete this comment?')">
+                Delete comment
+            </button>
+        </form>
+    </div>
+</section>
+
+<script>
+    var textarea = document.getElementById('comment_text');
+    var counter = document.getElementById('char-count');
+    textarea.addEventListener('input', function () {
+        counter.textContent = this.value.length + ' / 2000';
+    });
+
+    var formChanged = false;
+    var form = document.querySelector('form');
+    form.addEventListener('change', function () { formChanged = true; });
+    form.addEventListener('input', function () { formChanged = true; });
+    form.addEventListener('submit', function () { formChanged = false; });
+    window.addEventListener('beforeunload', function (e) {
+        if (formChanged) { e.preventDefault(); e.returnValue = ''; }
+    });
+</script>
+{% endblock %}

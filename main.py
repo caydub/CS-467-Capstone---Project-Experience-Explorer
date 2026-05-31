@@ -1119,6 +1119,51 @@ def delete_comment(comment_id):
     return redirect(url_for('project_detail', project_id=project_id))
 
 
+@app.route('/comment/<int:comment_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_comment(comment_id):
+    """Display and process the comment edit page (owner only)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT c.*, r.project_id FROM comments c'
+        ' JOIN reviews r ON c.review_id = r.review_id'
+        ' WHERE c.comment_id = %s',
+        (comment_id,)
+    )
+    comment = cursor.fetchone()
+
+    if comment is None:
+        conn.close()
+        return 'Comment not found', 404
+
+    if comment['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    if request.method == 'POST':
+        comment_text = request.form.get('comment_text', '').strip()
+        if not comment_text:
+            conn.close()
+            flash('Comment cannot be empty.', 'error')
+            return render_template('edit_comment.html', comment=comment)
+
+        try:
+            cursor.execute(
+                'UPDATE comments SET comment_text = %s WHERE comment_id = %s',
+                (comment_text, comment_id)
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        flash('Comment updated.', 'success')
+        return redirect(url_for('project_detail', project_id=comment['project_id']))
+
+    conn.close()
+    return render_template('edit_comment.html', comment=comment)
+
+
 @app.route('/my-activity')
 @login_required
 def my_activity():

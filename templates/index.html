@@ -30,7 +30,7 @@
     <div class="filter-panel-header">
         <button type="button" class="filter-toggle-btn" id="filter-toggle">
             Filters{% if active_filter_count %} <span class="filter-badge">{{ active_filter_count }}</span>{% endif %}
-            <span class="toggle-arrow">▼</span>
+            <span class="toggle-arrow">{% if active_filter_count %}▲{% else %}▼{% endif %}</span>
         </button>
     </div>
 
@@ -277,11 +277,6 @@
         panel.style.display = open ? 'none' : 'block';
         arrow.textContent = open ? '▼' : '▲';
     });
-
-    // set arrow to ▲ if panel is already open on load
-    if (panel.style.display !== 'none') {
-        arrow.textContent = '▲';
-    }
 
     // read-more on card descriptions
     document.querySelectorAll('.card-description').forEach(function (el) {

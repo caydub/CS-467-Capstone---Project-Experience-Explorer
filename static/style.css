@@ -893,6 +893,13 @@ body {
     margin: 0;
 }
 
+.comment-owner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
 .activity-project-title {
     font-weight: 600;
     margin-bottom: 0.5rem;
@@ -1209,11 +1216,29 @@ body {
    Responsive
    ================================================================ */
 @media (max-width: 700px) {
+    /* Nav */
     .nav-container {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.5rem;
     }
 
+    .logo {
+        font-size: 1.05rem;
+    }
+
+    .nav-links {
+        gap: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* Layout */
+    .container {
+        width: 94%;
+        margin: 1.25rem auto;
+    }
+
+    /* Search */
     .search-bar {
         flex-direction: column;
         align-items: stretch;
@@ -1223,39 +1248,108 @@ body {
         max-width: none;
     }
 
+    /* Filter panel */
     .filter-bar {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .clear-filters {
-        margin-left: 0;
     }
 
     .filter-grid {
         grid-template-columns: 1fr 1fr;
     }
 
-    .rating-label {
-        width: 110px;
+    .filter-section--wide {
+        grid-column: span 2;
     }
 
+    .filter-panel-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .filter-panel-footer .button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .clear-filters {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    /* Rating rows */
+    .rating-label {
+        width: 105px;
+        font-size: 0.8rem;
+    }
+
+    .rating-value {
+        width: 44px;
+        font-size: 0.8rem;
+    }
+
+    /* Reviews header */
     .reviews-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .button {
-        width: fit-content;
+    /* Review meta row — wrap actions below pseudonym on very narrow screens */
+    .review-meta {
+        flex-wrap: wrap;
     }
 
-    .container {
-        width: 94%;
-        margin: 1.5rem auto;
+    /* Pagination — wrap and shrink buttons */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
     }
 
+    .page-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    /* Forms */
+    .form-card {
+        padding: 1.25rem 1rem;
+        margin: 1rem auto;
+    }
+
+    /* Project image */
+    .project-image {
+        width: 100%;
+        height: auto;
+    }
+
+    .card-thumbnail {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Footer */
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .footer-sep {
+        display: none;
+    }
+
+    /* Scroll-to-top */
     .scroll-top {
         bottom: 1rem;
         right: 1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    /* Buttons */
+    .button {
+        width: fit-content;
     }
 }
