@@ -447,17 +447,28 @@ def home():
             return None
 
     filter_min_difficulty = parse_rating_filter('min_difficulty')
+    filter_max_difficulty = parse_rating_filter('max_difficulty')
     filter_min_workload = parse_rating_filter('min_workload')
+    filter_max_workload = parse_rating_filter('max_workload')
+    filter_min_team_dynamics = parse_rating_filter('min_team_dynamics')
+    filter_max_team_dynamics = parse_rating_filter('max_team_dynamics')
     filter_min_recommend = parse_rating_filter('min_recommend')
+    filter_max_recommend = parse_rating_filter('max_recommend')
     filter_has_reviews = request.args.get('has_reviews') == '1'
+    filter_term = request.args.get('filter_term', '').strip() or None
 
     sort_options = {
         'title': 'p.title ASC',
         'most_reviews': 'review_count DESC, p.title ASC',
         'avg_score': 'avg_score DESC, p.title ASC',
-        'highest_recommendation': 'avg_recommend DESC, p.title ASC',
         'highest_difficulty': 'avg_difficulty DESC, p.title ASC',
+        'lowest_difficulty': 'avg_difficulty ASC, p.title ASC',
         'highest_workload': 'avg_workload DESC, p.title ASC',
+        'lowest_workload': 'avg_workload ASC, p.title ASC',
+        'highest_team_dynamics': 'avg_team_dynamics DESC, p.title ASC',
+        'lowest_team_dynamics': 'avg_team_dynamics ASC, p.title ASC',
+        'highest_recommendation': 'avg_recommend DESC, p.title ASC',
+        'lowest_recommendation': 'avg_recommend ASC, p.title ASC',
     }
     order_by = sort_options.get(sort_option, sort_options['title'])
 
@@ -474,16 +485,42 @@ def home():
         having_clauses.append('AVG(r.difficulty) >= %s')
         having_params.append(filter_min_difficulty)
 
+    if filter_max_difficulty:
+        having_clauses.append('AVG(r.difficulty) <= %s')
+        having_params.append(filter_max_difficulty)
+
     if filter_min_workload:
         having_clauses.append('AVG(r.workload) >= %s')
         having_params.append(filter_min_workload)
+
+    if filter_max_workload:
+        having_clauses.append('AVG(r.workload) <= %s')
+        having_params.append(filter_max_workload)
+
+    if filter_min_team_dynamics:
+        having_clauses.append('AVG(r.team_dynamics) >= %s')
+        having_params.append(filter_min_team_dynamics)
+
+    if filter_max_team_dynamics:
+        having_clauses.append('AVG(r.team_dynamics) <= %s')
+        having_params.append(filter_max_team_dynamics)
 
     if filter_min_recommend:
         having_clauses.append('AVG(r.would_recommend) >= %s')
         having_params.append(filter_min_recommend)
 
+    if filter_max_recommend:
+        having_clauses.append('AVG(r.would_recommend) <= %s')
+        having_params.append(filter_max_recommend)
+
     if filter_has_reviews:
         having_clauses.append('COUNT(r.review_id) > 0')
+
+    if filter_term:
+        where_clauses.append(
+            'EXISTS (SELECT 1 FROM reviews rt WHERE rt.project_id = p.project_id AND rt.term = %s)'
+        )
+        where_params.append(filter_term)
 
     where_sql = ('WHERE ' + ' AND '.join(where_clauses)) if where_clauses else ''
     having_sql = ('HAVING ' + ' AND '.join(having_clauses)) if having_clauses else ''
@@ -503,7 +540,14 @@ def home():
                 + AVG(r.team_dynamics) + AVG(r.would_recommend)) / 4.0         AS avg_score,
             (SELECT r2.review_text FROM reviews r2
              WHERE r2.project_id = p.project_id
-             ORDER BY r2.created_at DESC LIMIT 1)                              AS top_snippet
+             ORDER BY r2.created_at DESC LIMIT 1)                              AS top_snippet,
+            (SELECT s2.pseudonym FROM reviews r2
+             JOIN students s2 ON r2.student_id = s2.student_id
+             WHERE r2.project_id = p.project_id
+             ORDER BY r2.created_at DESC LIMIT 1)                              AS top_pseudonym,
+            (SELECT r2.term FROM reviews r2
+             WHERE r2.project_id = p.project_id
+             ORDER BY r2.created_at DESC LIMIT 1)                             AS top_term
         FROM projects p
         LEFT JOIN reviews r ON p.project_id = r.project_id
         {where_sql}
@@ -530,6 +574,8 @@ def home():
     cursor = conn.cursor()
     cursor.execute('SELECT COUNT(*) AS cnt FROM projects')
     total_count = cursor.fetchone()['cnt']
+    cursor.execute('SELECT DISTINCT term FROM reviews WHERE term IS NOT NULL ORDER BY term DESC')
+    available_terms = [row['term'] for row in cursor.fetchall()]
     cursor.execute(count_query, where_params + having_params)
     filtered_count = cursor.fetchone()['cnt']
     cursor.execute(paginated_query, where_params + having_params)
@@ -545,9 +591,16 @@ def home():
         search_query=search_query,
         sort_option=sort_option,
         filter_min_difficulty=filter_min_difficulty,
+        filter_max_difficulty=filter_max_difficulty,
         filter_min_workload=filter_min_workload,
+        filter_max_workload=filter_max_workload,
+        filter_min_team_dynamics=filter_min_team_dynamics,
+        filter_max_team_dynamics=filter_max_team_dynamics,
         filter_min_recommend=filter_min_recommend,
+        filter_max_recommend=filter_max_recommend,
         filter_has_reviews=filter_has_reviews,
+        filter_term=filter_term,
+        available_terms=available_terms,
         filtered_count=filtered_count,
         total_count=total_count,
         page=page,
