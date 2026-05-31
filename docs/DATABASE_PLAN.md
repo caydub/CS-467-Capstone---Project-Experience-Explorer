@@ -1,6 +1,6 @@
 # Database Plan
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 Caleb Richter, Henry Thong, Benjamin Joseph
 
 This is a living document. Update it as the schema evolves.

@@ -1,6 +1,6 @@
 # API Reference
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 This is a living document. Add new routes here as they are built.
 

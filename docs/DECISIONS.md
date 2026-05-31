@@ -1,6 +1,6 @@
 # Decisions
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 A record of significant technical and product decisions made during the project. Helps the team avoid relitigating settled questions and gives context for why things are the way they are.
 

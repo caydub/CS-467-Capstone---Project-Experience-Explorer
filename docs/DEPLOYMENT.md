@@ -1,6 +1,6 @@
 # Deployment
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 ---
 

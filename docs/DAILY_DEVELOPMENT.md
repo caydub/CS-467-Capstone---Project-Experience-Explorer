@@ -1,6 +1,6 @@
 # Daily Development Reference
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 Quick reference for common development tasks and things that will bite you if you forget.
 

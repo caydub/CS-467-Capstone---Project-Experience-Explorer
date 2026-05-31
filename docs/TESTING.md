@@ -1,6 +1,6 @@
 # Testing
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 > **Status: Placeholder — to be filled in as tests are written**
 

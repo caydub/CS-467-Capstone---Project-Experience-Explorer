@@ -1,6 +1,6 @@
 # Contributing
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 Guidelines for contributing to this project. Read this before opening your first PR.
 

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}{{ project.title }} — Project Experience Explorer{% endblock %}
+{% block title %}{{ project.title }} — OSU Capstone Explorer{% endblock %}
 
 {% block head %}
-<meta name="description" content="{{ project.description | replace('\n', ' ') | truncate(160, True, '…') if project.description else project.title + ' — capstone project reviews on Project Experience Explorer' }}">
+<meta name="description" content="{{ project.description | replace('\n', ' ') | truncate(160, True, '…') if project.description else project.title + ' — capstone project reviews on OSU Capstone Explorer' }}">
 {% endblock %}
 
 {% block content %}

@@ -1,6 +1,6 @@
 # Capstone Portal Scraping
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 > **Status: Complete — initial seed done April 23, 2026**
 

@@ -1,4 +1,4 @@
-# Project Experience Explorer
+# OSU Capstone Explorer
 
 **CS 467 Spring 2026** — Caleb Richter, Henry Thong, Benjamin Joseph
 
