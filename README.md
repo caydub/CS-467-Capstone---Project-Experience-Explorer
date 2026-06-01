@@ -53,8 +53,8 @@ For full setup instructions including venv, .env, and proxy download see [docs/D
 | [docs/API.md](docs/API.md) | Flask routes reference |
 | [docs/DATABASE_PLAN.md](docs/DATABASE_PLAN.md) | Schema design and migration strategy |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment process and GCP config |
-| [docs/TESTING.md](docs/TESTING.md) | Testing approach (in progress) |
-| [docs/SCRAPING.md](docs/SCRAPING.md) | Capstone portal scraping (in progress) |
+| [docs/TESTING.md](docs/TESTING.md) | Testing approach and how to run the test suite |
+| [docs/SCRAPING.md](docs/SCRAPING.md) | Capstone portal scraping and how to re-run the seeder |
 
 ---
 

@@ -2,72 +2,65 @@
 
 **OSU Capstone Explorer — CS 467 Spring 2026**
 
-> **Status: Placeholder — to be filled in as tests are written**
+> **Status: Current as of May 2026**
 
 ---
 
 ## Overview
 
-> Document the testing approach here once tests are written. Include what framework is used, what is tested, and how to run tests.
+Tests are written with pytest and cover route smoke tests and auth helper functions. The test suite uses a mock database connection so no live Cloud SQL instance is needed to run tests.
 
 ---
 
 ## Running Tests
 
-> Add instructions here once tests exist.
+Make sure you're in the project root with the virtual environment active:
 
 ```bash
-# placeholder — update when tests are written
-python -m pytest
+source .venv/bin/activate
+python -m pytest tests/
+```
+
+To see verbose output:
+
+```bash
+python -m pytest tests/ -v
 ```
 
 ---
 
 ## Test Structure
 
-> Document the test folder structure here once it exists.
-
 ```
-/tests
-    test_routes.py        # Flask route tests
-    test_db.py            # Database query tests
-    test_auth.py          # Auth flow tests (when ONID is implemented)
+tests/
+    conftest.py       # Shared fixtures — Flask test client, mock DB connection
+    test_routes.py    # Smoke tests for all routes, login redirect behavior
+    test_auth.py      # get_or_create_student logic, ONID hashing, pseudonym uniqueness
 ```
 
 ---
 
-## What to Test
+## What Is Covered
 
-> Fill this in as features are built. General guidelines:
+**Route tests (`test_routes.py`)**
+- All public routes return 200
+- Auth-protected routes redirect unauthenticated users to /login
+- Routes that require a valid project_id return 404 on bad input
 
-- Every Flask route should have at least a smoke test (does it return 200?)
-- Database functions should be tested with a test database, not production
-- Form submissions should be tested for both valid and invalid input
-- Auth-protected routes should be tested for both authenticated and unauthenticated access
-
----
-
-## Test Database
-
-> Document how to set up a test database here once the approach is decided.
-
-Options being considered:
-- Separate local MySQL database for testing
-- In-memory SQLite for unit tests
-- Fixtures/mocks for database calls
+**Auth tests (`test_auth.py`)**
+- `get_or_create_student` creates a new student on first login
+- `get_or_create_student` returns the existing student on repeat login
+- ONID hashing is consistent — same email always produces the same hash
+- Pseudonym uniqueness retry — if a generated pseudonym is already taken, a new one is generated
 
 ---
 
 ## CI Integration
 
-Tests will be added to the GitHub Actions lint workflow once written. Every PR will need to pass tests before merging.
-
-> Update `.github/workflows/lint.yml` when tests are added.
+flake8 runs on every PR via GitHub Actions (`.github/workflows/lint.yml`). Tests are not currently wired into CI but can be run locally before opening a PR.
 
 ---
 
-## Open Questions
+## Test Database
 
-- [ ] What testing framework? (pytest recommended for Flask)
-- [ ] How to handle database in tests — mock, fixture, or separate test DB?
-- [ ] What coverage percentage is the team targeting?
+Tests use `unittest.mock` to patch `get_db_connection()` so no database connection is required. Mock return values are set per test to simulate query results.
