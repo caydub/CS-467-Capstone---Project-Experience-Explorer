@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Browse Projects{% endblock %}
+{% block title %}OSU Capstone Explorer{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-    <h1>Browse Projects</h1>
-    <p>Explore and read reviews of Capstone Projects from past students.</p>
+    <h1>OSU Capstone Explorer</h1>
+    <p>Browse and read peer reviews of CS 467 capstone projects from past students.</p>
 </div>
 
 {% set active_filter_count =
     (1 if sort_option != 'title' else 0) +
-    (1 if filter_min_difficulty else 0) +
-    (1 if filter_max_difficulty else 0) +
+    (1 if filter_min_complexity else 0) +
+    (1 if filter_max_complexity else 0) +
     (1 if filter_min_workload else 0) +
     (1 if filter_max_workload else 0) +
     (1 if filter_min_team_dynamics else 0) +
@@ -24,17 +24,14 @@
 <form class="search-form" method="GET" action="/">
     <div class="search-bar">
         <input type="text" name="search" placeholder="Search projects..." value="{{ search_query }}">
-        <button type="submit" class="button">Apply</button>
+        <button type="submit" class="button">Search</button>
     </div>
 
     <div class="filter-panel-header">
         <button type="button" class="filter-toggle-btn" id="filter-toggle">
             Filters{% if active_filter_count %} <span class="filter-badge">{{ active_filter_count }}</span>{% endif %}
-            <span class="toggle-arrow">▼</span>
+            <span class="toggle-arrow">{% if active_filter_count %}▲{% else %}▼{% endif %}</span>
         </button>
-        {% if active_filter_count %}
-        <a href="/?search={{ search_query }}" class="clear-filters">Clear all filters</a>
-        {% endif %}
     </div>
 
     <div class="filter-panel" id="filter-panel" {% if not active_filter_count %}style="display:none"{% endif %}>
@@ -49,9 +46,9 @@
                         <option value="most_reviews" {% if sort_option == 'most_reviews' %}selected{% endif %}>Most Reviews</option>
                         <option value="avg_score" {% if sort_option == 'avg_score' %}selected{% endif %}>Highest Avg Score</option>
                     </optgroup>
-                    <optgroup label="Difficulty">
-                        <option value="highest_difficulty" {% if sort_option == 'highest_difficulty' %}selected{% endif %}>Difficulty: High → Low</option>
-                        <option value="lowest_difficulty" {% if sort_option == 'lowest_difficulty' %}selected{% endif %}>Difficulty: Low → High</option>
+                    <optgroup label="Complexity">
+                        <option value="highest_complexity" {% if sort_option == 'highest_complexity' %}selected{% endif %}>Complexity: High → Low</option>
+                        <option value="lowest_complexity" {% if sort_option == 'lowest_complexity' %}selected{% endif %}>Complexity: Low → High</option>
                     </optgroup>
                     <optgroup label="Workload">
                         <option value="highest_workload" {% if sort_option == 'highest_workload' %}selected{% endif %}>Workload: High → Low</option>
@@ -69,19 +66,19 @@
             </div>
 
             <div class="filter-section">
-                <span class="filter-section-label">Difficulty</span>
+                <span class="filter-section-label">Complexity</span>
                 <div class="filter-range">
-                    <select name="min_difficulty">
+                    <select name="min_complexity">
                         <option value="">Min</option>
                         {% for val in [1, 2, 3, 4, 5] %}
-                        <option value="{{ val }}" {% if filter_min_difficulty == val %}selected{% endif %}>≥ {{ val }}</option>
+                        <option value="{{ val }}" {% if filter_min_complexity == val %}selected{% endif %}>≥ {{ val }}</option>
                         {% endfor %}
                     </select>
                     <span class="filter-range-sep">—</span>
-                    <select name="max_difficulty">
+                    <select name="max_complexity">
                         <option value="">Max</option>
                         {% for val in [1, 2, 3, 4, 5] %}
-                        <option value="{{ val }}" {% if filter_max_difficulty == val %}selected{% endif %}>≤ {{ val }}</option>
+                        <option value="{{ val }}" {% if filter_max_complexity == val %}selected{% endif %}>≤ {{ val }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -152,8 +149,92 @@
             </div>
 
         </div>
+
+        <div class="filter-panel-footer">
+            {% if active_filter_count %}
+            <a href="/?search={{ search_query }}" class="clear-filters">Clear all filters</a>
+            {% endif %}
+            <button type="submit" class="button">Apply</button>
+        </div>
+
     </div>
 </form>
+
+{# ---- Active filter chips ---- #}
+{% if active_filter_count %}
+{# Build a URL fragment for each individual filter so we can assemble remove-one links #}
+{% set fp_search %}search={{ search_query }}{% endset %}
+{% set fp_sort %}&sort={{ sort_option }}{% endset %}
+{% set fp_min_c %}{% if filter_min_complexity %}&min_complexity={{ filter_min_complexity }}{% endif %}{% endset %}
+{% set fp_max_c %}{% if filter_max_complexity %}&max_complexity={{ filter_max_complexity }}{% endif %}{% endset %}
+{% set fp_min_w %}{% if filter_min_workload %}&min_workload={{ filter_min_workload }}{% endif %}{% endset %}
+{% set fp_max_w %}{% if filter_max_workload %}&max_workload={{ filter_max_workload }}{% endif %}{% endset %}
+{% set fp_min_td %}{% if filter_min_team_dynamics %}&min_team_dynamics={{ filter_min_team_dynamics }}{% endif %}{% endset %}
+{% set fp_max_td %}{% if filter_max_team_dynamics %}&max_team_dynamics={{ filter_max_team_dynamics }}{% endif %}{% endset %}
+{% set fp_min_r %}{% if filter_min_recommend %}&min_recommend={{ filter_min_recommend }}{% endif %}{% endset %}
+{% set fp_max_r %}{% if filter_max_recommend %}&max_recommend={{ filter_max_recommend }}{% endif %}{% endset %}
+{% set fp_has %}{% if filter_has_reviews %}&has_reviews=1{% endif %}{% endset %}
+
+<div class="filter-chips">
+    {% if sort_option != 'title' %}
+    {% set sort_label = {
+        'most_reviews': 'Most Reviews',
+        'avg_score': 'Avg Score',
+        'highest_complexity': 'Complexity: High → Low',
+        'lowest_complexity': 'Complexity: Low → High',
+        'highest_workload': 'Workload: High → Low',
+        'lowest_workload': 'Workload: Low → High',
+        'highest_team_dynamics': 'Team Dynamics: High → Low',
+        'lowest_team_dynamics': 'Team Dynamics: Low → High',
+        'highest_recommendation': 'Recommendation: High → Low',
+        'lowest_recommendation': 'Recommendation: Low → High'
+    }[sort_option] %}
+    <a href="/?{{ fp_search }}&sort=title{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Sort: {{ sort_label }} <span class="chip-remove">×</span></a>
+    {% endif %}
+
+    {% if filter_min_complexity %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Complexity ≥ {{ filter_min_complexity }} <span class="chip-remove">×</span></a>
+    {% endif %}
+    {% if filter_max_complexity %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Complexity ≤ {{ filter_max_complexity }} <span class="chip-remove">×</span></a>
+    {% endif %}
+
+    {% if filter_min_workload %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Workload ≥ {{ filter_min_workload }} <span class="chip-remove">×</span></a>
+    {% endif %}
+    {% if filter_max_workload %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Workload ≤ {{ filter_max_workload }} <span class="chip-remove">×</span></a>
+    {% endif %}
+
+    {% if filter_min_team_dynamics %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Team Dynamics ≥ {{ filter_min_team_dynamics }} <span class="chip-remove">×</span></a>
+    {% endif %}
+    {% if filter_max_team_dynamics %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_min_r }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Team Dynamics ≤ {{ filter_max_team_dynamics }} <span class="chip-remove">×</span></a>
+    {% endif %}
+
+    {% if filter_min_recommend %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_max_r }}{{ fp_has }}"
+       class="filter-chip">Recommendation ≥ {{ filter_min_recommend }} <span class="chip-remove">×</span></a>
+    {% endif %}
+    {% if filter_max_recommend %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_has }}"
+       class="filter-chip">Recommendation ≤ {{ filter_max_recommend }} <span class="chip-remove">×</span></a>
+    {% endif %}
+
+    {% if filter_has_reviews %}
+    <a href="/?{{ fp_search }}{{ fp_sort }}{{ fp_min_c }}{{ fp_max_c }}{{ fp_min_w }}{{ fp_max_w }}{{ fp_min_td }}{{ fp_max_td }}{{ fp_min_r }}{{ fp_max_r }}"
+       class="filter-chip">Has reviews <span class="chip-remove">×</span></a>
+    {% endif %}
+</div>
+{% endif %}
 
 <div class="result-count">
     {% set start = (page - 1) * per_page + 1 %}
@@ -179,7 +260,7 @@
 
         <div class="ratings-grid">
             {% set ratings = [
-                ('Difficulty',     project.avg_difficulty),
+                ('Complexity',     project.avg_complexity),
                 ('Workload',       project.avg_workload),
                 ('Team Dynamics',  project.avg_team_dynamics),
                 ('Recommendation', project.avg_recommend)
@@ -239,7 +320,7 @@
     </div>
 {% endif %}
 
-{% set qp %}search={{ search_query }}&sort={{ sort_option }}{% if filter_min_difficulty %}&min_difficulty={{ filter_min_difficulty }}{% endif %}{% if filter_max_difficulty %}&max_difficulty={{ filter_max_difficulty }}{% endif %}{% if filter_min_workload %}&min_workload={{ filter_min_workload }}{% endif %}{% if filter_max_workload %}&max_workload={{ filter_max_workload }}{% endif %}{% if filter_min_team_dynamics %}&min_team_dynamics={{ filter_min_team_dynamics }}{% endif %}{% if filter_max_team_dynamics %}&max_team_dynamics={{ filter_max_team_dynamics }}{% endif %}{% if filter_min_recommend %}&min_recommend={{ filter_min_recommend }}{% endif %}{% if filter_max_recommend %}&max_recommend={{ filter_max_recommend }}{% endif %}{% if filter_has_reviews %}&has_reviews=1{% endif %}{% endset %}
+{% set qp %}search={{ search_query }}&sort={{ sort_option }}{% if filter_min_complexity %}&min_complexity={{ filter_min_complexity }}{% endif %}{% if filter_max_complexity %}&max_complexity={{ filter_max_complexity }}{% endif %}{% if filter_min_workload %}&min_workload={{ filter_min_workload }}{% endif %}{% if filter_max_workload %}&max_workload={{ filter_max_workload }}{% endif %}{% if filter_min_team_dynamics %}&min_team_dynamics={{ filter_min_team_dynamics }}{% endif %}{% if filter_max_team_dynamics %}&max_team_dynamics={{ filter_max_team_dynamics }}{% endif %}{% if filter_min_recommend %}&min_recommend={{ filter_min_recommend }}{% endif %}{% if filter_max_recommend %}&max_recommend={{ filter_max_recommend }}{% endif %}{% if filter_has_reviews %}&has_reviews=1{% endif %}{% endset %}
 
 {% if total_pages > 1 %}
 <div class="pagination">
@@ -272,11 +353,6 @@
         panel.style.display = open ? 'none' : 'block';
         arrow.textContent = open ? '▼' : '▲';
     });
-
-    // set arrow to ▲ if panel is already open on load
-    if (panel.style.display !== 'none') {
-        arrow.textContent = '▲';
-    }
 
     // read-more on card descriptions
     document.querySelectorAll('.card-description').forEach(function (el) {

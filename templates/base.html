@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Project Experience Explorer{% endblock %}</title>
+    <title>{% block title %}OSU Capstone Explorer{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,10 +15,11 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <h2 class="logo">🎓 Project Experience Explorer</h2>
+            <h2 class="logo">🎓 OSU Capstone Explorer</h2>
             <div class="nav-links">
                 <a href="/">Browse Projects</a>
                 {% if session.student_id %}
+                    <a href="{{ url_for('my_activity') }}">My Activity</a>
                     <span class="nav-pseudonym">{{ session.pseudonym }}</span>
                     <a href="{{ url_for('logout') }}">Log out</a>
                 {% else %}
@@ -28,10 +29,41 @@
         </div>
     </nav>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash--{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
     <main class="container">
         {% block content %}
         {% endblock %}
     </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span>© 2026 OSU Capstone Explorer</span>
+            <span class="footer-sep">·</span>
+            <span>CS 467 Spring 2026 — Caleb Richter, Henry Thong, Benjamin Joseph</span>
+            <span class="footer-sep">·</span>
+            <a href="/">Browse Projects</a>
+        </div>
+    </footer>
+
+    <script>
+        // auto-dismiss flash messages after 4 seconds
+        setTimeout(function () {
+            document.querySelectorAll('.flash').forEach(function (el) {
+                el.style.transition = 'opacity 0.5s ease';
+                el.style.opacity = '0';
+                setTimeout(function () { el.remove(); }, 500);
+            });
+        }, 4000);
+    </script>
 
 </body>
 </html>

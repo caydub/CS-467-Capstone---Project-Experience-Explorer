@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}{{ project.title }} — Project Experience Explorer{% endblock %}
+{% block title %}{{ project.title }} — OSU Capstone Explorer{% endblock %}
 
 {% block head %}
-<meta name="description" content="{{ project.description | replace('\n', ' ') | truncate(160, True, '…') if project.description else project.title + ' — capstone project reviews on Project Experience Explorer' }}">
+<meta name="description" content="{{ project.description | replace('\n', ' ') | truncate(160, True, '…') if project.description else project.title + ' — capstone project reviews on OSU Capstone Explorer' }}">
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
 <div class="project-card">
     <div class="ratings-grid">
         {% set ratings = [
-            ('Difficulty',     project.difficulty),
+            ('Complexity',     project.complexity),
             ('Workload',       project.workload),
             ('Team Dynamics',  project.team_dynamics),
             ('Would Recommend', project.would_recommend)
@@ -57,9 +57,21 @@
     </div>
 </div>
 
+{% if project.url %}
+<a href="{{ project.url }}" target="_blank" rel="noopener" class="portal-link">
+    View on Capstone Portal ↗
+</a>
+{% endif %}
+
+{% if session.student_id and user_review_id %}
+<a href="{{ url_for('edit_review', review_id=user_review_id) }}" class="button">
+    Edit Your Review
+</a>
+{% else %}
 <a href="{{ url_for('submit_review', project_id=project.project_id) }}" class="button">
     Submit Review
 </a>
+{% endif %}
 
 {# ---- Reviews header ---- #}
 <div class="reviews-header">
@@ -105,12 +117,20 @@
             {% if session.student_id and session.student_id == review.student_id %}
             <a href="{{ url_for('edit_review', review_id=review.review_id) }}"
                class="edit-review-btn">Edit</a>
+            <form method="POST"
+                  action="{{ url_for('delete_review', review_id=review.review_id) }}"
+                  class="delete-form">
+                <button type="submit" class="delete-btn"
+                        onclick="return confirm('Delete your review? This cannot be undone.')">
+                    Delete
+                </button>
+            </form>
             {% endif %}
         </div>
 
         <div class="ratings-grid ratings-grid--compact">
             {% set review_ratings = [
-                ('Difficulty',     review.difficulty),
+                ('Complexity',     review.complexity),
                 ('Workload',       review.workload),
                 ('Team Dynamics',  review.team_dynamics),
                 ('Would Recommend', review.would_recommend)
@@ -170,10 +190,27 @@
         {% for comment in comments %}
             {% if comment.review_id == review.review_id %}
                 <div class="comment-card">
-                    <p>
-                        <strong>{{ comment.pseudonym }}</strong>
-                        <span class="comment-time">{{ comment.created_at | relative_time }}</span>
-                    </p>
+                    <div class="comment-header">
+                        <p>
+                            <strong>{{ comment.pseudonym }}</strong>
+                            <span class="comment-time">{{ comment.created_at | relative_time }}</span>
+                        </p>
+                        {% if session.student_id and session.student_id == comment.student_id %}
+                        <div class="comment-owner-actions">
+                            <a href="{{ url_for('edit_comment', comment_id=comment.comment_id) }}"
+                               class="delete-btn delete-btn--small">Edit</a>
+                            <form method="POST"
+                                  action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
+                                  class="delete-form">
+                                <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                                <button type="submit" class="delete-btn delete-btn--small"
+                                        onclick="return confirm('Delete this comment?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
                     <p>{{ comment.comment_text }}</p>
                     <div class="comment-vote-row">
                         {% if session.student_id %}
@@ -213,7 +250,9 @@
             <form method="POST" action="{{ url_for('submit_comment', review_id=review.review_id) }}">
                 <input type="hidden" name="project_id" value="{{ project.project_id }}">
                 <textarea name="comment_text" rows="3"
-                          placeholder="Add a comment..." required></textarea>
+                          placeholder="Add a comment..."
+                          maxlength="2000" class="comment-textarea" required></textarea>
+                <span class="char-count comment-char-count">0 / 2000</span>
                 <button type="submit" class="button">Post Comment</button>
             </form>
         {% else %}
@@ -275,6 +314,14 @@
 <script>
     window.addEventListener('scroll', function () {
         document.getElementById('scroll-top').style.display = window.scrollY > 300 ? 'flex' : 'none';
+    });
+
+    // character counters on comment textareas
+    document.querySelectorAll('.comment-textarea').forEach(function (ta) {
+        var counter = ta.nextElementSibling;
+        ta.addEventListener('input', function () {
+            counter.textContent = ta.value.length + ' / 2000';
+        });
     });
 
     document.querySelectorAll('.review-text').forEach(function (el) {

@@ -1,4 +1,4 @@
-# Project Experience Explorer
+# OSU Capstone Explorer
 
 **CS 467 Spring 2026** — Caleb Richter, Henry Thong, Benjamin Joseph
 
@@ -53,8 +53,8 @@ For full setup instructions including venv, .env, and proxy download see [docs/D
 | [docs/API.md](docs/API.md) | Flask routes reference |
 | [docs/DATABASE_PLAN.md](docs/DATABASE_PLAN.md) | Schema design and migration strategy |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment process and GCP config |
-| [docs/TESTING.md](docs/TESTING.md) | Testing approach (in progress) |
-| [docs/SCRAPING.md](docs/SCRAPING.md) | Capstone portal scraping (in progress) |
+| [docs/TESTING.md](docs/TESTING.md) | Testing approach and how to run the test suite |
+| [docs/SCRAPING.md](docs/SCRAPING.md) | Capstone portal scraping and how to re-run the seeder |
 
 ---
 
@@ -71,18 +71,25 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 **Live and functional.** Core feature set is complete.
 
 **Built:**
-- Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion)
-- Project detail pages with paginated, term-filterable reviews
+- Browse and search projects with collapsible filter panel (min/max ratings, sort by any criterion, active filter chips with individual removal)
+- Project detail pages with paginated, term-filterable reviews — link to Capstone portal for each project
 - Google OAuth login restricted to @oregonstate.edu accounts
-- Submit and edit reviews (term dropdown, four rating criteria, optional AI use field)
+- Submit, edit, and delete reviews (term dropdown, four rating criteria, optional AI use field, 50-char minimum)
+- One review per student per project enforced at DB level
 - Helpfulness voting (👍/👎) on both reviews and comments
-- Comments on reviews
+- Submit, edit, and delete comments, sorted by helpfulness score
+- My Activity page — all your reviews and comments in one place
+- Delete account — removes all associated data via FK cascade
+- Flash messages, custom 404/500 error pages, mobile responsive layout
 - Thumbnail images scraped from the Capstone portal
 
 **Planned / deferred:**
-- Rename `difficulty` → `complexity` across DB and codebase
 - Flag / report inappropriate reviews
 - Admin moderation panel
+
+**Explicitly out of scope (dropped):**
+- User profile page
+- Contact / feedback page
 
 ---
 

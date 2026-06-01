@@ -23,8 +23,8 @@
             {% endfor %}
         </select>
 
-        <label for="difficulty">Difficulty</label>
-        <select id="difficulty" name="difficulty" required>
+        <label for="complexity">Complexity</label>
+        <select id="complexity" name="complexity" required>
             <option value="">Select a rating</option>
             <option value="1">1 - Very easy</option>
             <option value="2">2 - Easy</option>
@@ -79,10 +79,11 @@
             name="review_text"
             rows="6"
             placeholder="Describe your experience with this project."
+            minlength="50"
             maxlength="4000"
             required
         ></textarea>
-        <span id="char-count" class="char-count">0 / 4000</span>
+        <span id="char-count" class="char-count">0 / 4000 (min 50)</span>
 
         <button type="submit" class="button">Submit Review</button>
     </form>
@@ -98,7 +99,10 @@
     var textarea = document.getElementById('review_text');
     var counter = document.getElementById('char-count');
     textarea.addEventListener('input', function () {
-        counter.textContent = this.value.length + ' / 4000';
+        var len = this.value.length;
+        counter.textContent = len < 50
+            ? len + ' / 4000 (min 50)'
+            : len + ' / 4000';
     });
 </script>
 {% endblock %}

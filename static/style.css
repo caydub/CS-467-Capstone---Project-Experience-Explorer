@@ -311,6 +311,50 @@ body {
     padding-top: 1.15rem;
 }
 
+.filter-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e8e8e8;
+}
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.6rem 0 0.25rem;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    background: #eaf4fb;
+    border: 1px solid #aed6f1;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: #2980b9;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.filter-chip:hover {
+    background: #d5eaf7;
+    border-color: #3498db;
+    text-decoration: none;
+}
+
+.chip-remove {
+    font-size: 0.9rem;
+    line-height: 1;
+    opacity: 0.6;
+}
+
 /* ================================================================
    Result count
    ================================================================ */
@@ -817,7 +861,6 @@ body {
 }
 
 .edit-review-btn {
-    margin-left: auto;
     font-size: 0.8rem;
     color: #3498db;
     text-decoration: none;
@@ -826,11 +869,141 @@ body {
     border-radius: 5px;
     background: #f0f8ff;
     transition: background-color 0.15s;
+    margin-left: auto;
 }
 
 .edit-review-btn:hover {
     background: #daeefb;
     text-decoration: none;
+}
+
+.delete-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: color 0.15s;
+}
+
+.delete-btn:hover {
+    color: #e74c3c;
+}
+
+.delete-btn--small {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.3rem;
+}
+
+.portal-link {
+    display: inline-block;
+    font-size: 0.875rem;
+    color: #3498db;
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+}
+
+.portal-link:hover {
+    text-decoration: underline;
+}
+
+.comment-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.comment-header p {
+    margin: 0;
+}
+
+.comment-owner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.activity-project-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.activity-project-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.activity-project-title a:hover {
+    text-decoration: underline;
+    color: #3498db;
+}
+
+.activity-review-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
+}
+
+.edit-review-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.danger-zone {
+    margin-top: 3rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #f5c6c6;
+    border-radius: 8px;
+    background: #fff8f8;
+}
+
+.danger-zone-title {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: #c0392b;
+}
+
+.danger-zone-desc {
+    font-size: 0.875rem;
+    color: #888;
+    margin: 0 0 1rem;
+}
+
+.danger-btn {
+    background: none;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.danger-btn:hover {
+    background: #e74c3c;
+    color: white;
 }
 
 .ai-use-tag {
@@ -1047,14 +1220,97 @@ body {
 }
 
 /* ================================================================
+   Flash messages
+   ================================================================ */
+.flash-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0.75rem auto 0;
+}
+
+.flash {
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+}
+
+.flash--success {
+    background: #eafaf1;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
+}
+
+.flash--error {
+    background: #fdf2f2;
+    color: #c0392b;
+    border: 1px solid #f5c6c6;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+.site-footer {
+    margin-top: 3rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid #e8e8e8;
+    background: #fff;
+}
+
+.footer-inner {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #999;
+}
+
+.footer-inner a {
+    color: #999;
+    text-decoration: none;
+}
+
+.footer-inner a:hover {
+    color: #555;
+    text-decoration: underline;
+}
+
+.footer-sep {
+    color: #ccc;
+}
+
+/* ================================================================
    Responsive
    ================================================================ */
 @media (max-width: 700px) {
+    /* Nav */
     .nav-container {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.5rem;
     }
 
+    .logo {
+        font-size: 1.05rem;
+    }
+
+    .nav-links {
+        gap: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* Layout */
+    .container {
+        width: 94%;
+        margin: 1.25rem auto;
+    }
+
+    /* Search */
     .search-bar {
         flex-direction: column;
         align-items: stretch;
@@ -1064,39 +1320,108 @@ body {
         max-width: none;
     }
 
+    /* Filter panel */
     .filter-bar {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .clear-filters {
-        margin-left: 0;
     }
 
     .filter-grid {
         grid-template-columns: 1fr 1fr;
     }
 
-    .rating-label {
-        width: 110px;
+    .filter-section--wide {
+        grid-column: span 2;
     }
 
+    .filter-panel-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .filter-panel-footer .button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .clear-filters {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    /* Rating rows */
+    .rating-label {
+        width: 105px;
+        font-size: 0.8rem;
+    }
+
+    .rating-value {
+        width: 44px;
+        font-size: 0.8rem;
+    }
+
+    /* Reviews header */
     .reviews-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .button {
-        width: fit-content;
+    /* Review meta row — wrap actions below pseudonym on very narrow screens */
+    .review-meta {
+        flex-wrap: wrap;
     }
 
-    .container {
-        width: 94%;
-        margin: 1.5rem auto;
+    /* Pagination — wrap and shrink buttons */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
     }
 
+    .page-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    /* Forms */
+    .form-card {
+        padding: 1.25rem 1rem;
+        margin: 1rem auto;
+    }
+
+    /* Project image */
+    .project-image {
+        width: 100%;
+        height: auto;
+    }
+
+    .card-thumbnail {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Footer */
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .footer-sep {
+        display: none;
+    }
+
+    /* Scroll-to-top */
     .scroll-top {
         bottom: 1rem;
         right: 1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    /* Buttons */
+    .button {
+        width: fit-content;
     }
 }

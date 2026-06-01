@@ -1,6 +1,6 @@
 # Capstone Portal Scraping
 
-**Project Experience Explorer — CS 467 Spring 2026**
+**OSU Capstone Explorer — CS 467 Spring 2026**
 
 > **Status: Complete — initial seed done April 23, 2026**
 
@@ -63,8 +63,24 @@ INSERT INTO projects (title, url) VALUES ('Project Name', 'https://portal-url');
 
 ---
 
-## Open Questions
+## What the Scraper Pulls
 
-- [ ] Should we pull additional metadata beyond title and URL? (description, sponsor, etc.)
-- [ ] How often does the portal update — do we need to re-scrape periodically or on a schedule?
-- [ ] Admin route in the app to add projects manually? (future feature)
+For each project the scraper extracts and stores:
+
+| Field | Notes |
+|-------|-------|
+| `title` | Project name |
+| `url` | Link to the Capstone portal detail page |
+| `description` | Full project description (stored as HTML, rendered with BeautifulSoup) |
+| `details` | Team/tech metadata block |
+| `image_url` | Thumbnail image from the portal (migration 005) |
+
+The scraper uses `ON DUPLICATE KEY UPDATE` on `url` so re-running it only updates rows where content has actually changed.
+
+---
+
+## Resolved Questions
+
+- **Additional metadata** — Yes, description, details, and image_url are all scraped and stored (migrations 002 and 005).
+- **Re-scrape frequency** — Re-run at the start of each new term when the portal updates with new projects. The scraper is idempotent so there is no risk in running it multiple times.
+- **Admin route for manual inserts** — Not implemented. Use Cloud SQL Studio to insert manually if needed, or just re-run the scraper.

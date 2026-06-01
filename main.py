@@ -10,7 +10,7 @@ from authlib.integrations.flask_client import OAuth
 from bs4 import BeautifulSoup, NavigableString
 from bs4 import Tag as BSTag
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from markupsafe import Markup, escape
 
 load_dotenv()
@@ -482,8 +482,8 @@ def home():
         except (ValueError, TypeError):
             return None
 
-    filter_min_difficulty = parse_rating_filter('min_difficulty')
-    filter_max_difficulty = parse_rating_filter('max_difficulty')
+    filter_min_complexity = parse_rating_filter('min_complexity')
+    filter_max_complexity = parse_rating_filter('max_complexity')
     filter_min_workload = parse_rating_filter('min_workload')
     filter_max_workload = parse_rating_filter('max_workload')
     filter_min_team_dynamics = parse_rating_filter('min_team_dynamics')
@@ -496,8 +496,8 @@ def home():
         'title': 'p.title ASC',
         'most_reviews': 'review_count DESC, p.title ASC',
         'avg_score': 'avg_score DESC, p.title ASC',
-        'highest_difficulty': 'avg_difficulty DESC, p.title ASC',
-        'lowest_difficulty': 'avg_difficulty ASC, p.title ASC',
+        'highest_complexity': 'avg_complexity DESC, p.title ASC',
+        'lowest_complexity': 'avg_complexity ASC, p.title ASC',
         'highest_workload': 'avg_workload DESC, p.title ASC',
         'lowest_workload': 'avg_workload ASC, p.title ASC',
         'highest_team_dynamics': 'avg_team_dynamics DESC, p.title ASC',
@@ -516,13 +516,13 @@ def home():
         where_clauses.append('p.title LIKE %s')
         where_params.append(f'%{search_query}%')
 
-    if filter_min_difficulty:
-        having_clauses.append('AVG(r.difficulty) >= %s')
-        having_params.append(filter_min_difficulty)
+    if filter_min_complexity:
+        having_clauses.append('AVG(r.complexity) >= %s')
+        having_params.append(filter_min_complexity)
 
-    if filter_max_difficulty:
-        having_clauses.append('AVG(r.difficulty) <= %s')
-        having_params.append(filter_max_difficulty)
+    if filter_max_complexity:
+        having_clauses.append('AVG(r.complexity) <= %s')
+        having_params.append(filter_max_complexity)
 
     if filter_min_workload:
         having_clauses.append('AVG(r.workload) >= %s')
@@ -561,11 +561,11 @@ def home():
             p.description,
             p.image_url,
             COUNT(r.review_id)                                                  AS review_count,
-            AVG(r.difficulty)                                                   AS avg_difficulty,
+            AVG(r.complexity)                                                   AS avg_complexity,
             AVG(r.workload)                                                     AS avg_workload,
             AVG(r.team_dynamics)                                                AS avg_team_dynamics,
             AVG(r.would_recommend)                                              AS avg_recommend,
-            (AVG(r.difficulty) + AVG(r.workload)
+            (AVG(r.complexity) + AVG(r.workload)
                 + AVG(r.team_dynamics) + AVG(r.would_recommend)) / 4.0         AS avg_score,
             (SELECT r2.review_text FROM reviews r2
              WHERE r2.project_id = p.project_id
@@ -617,8 +617,8 @@ def home():
         projects=projects,
         search_query=search_query,
         sort_option=sort_option,
-        filter_min_difficulty=filter_min_difficulty,
-        filter_max_difficulty=filter_max_difficulty,
+        filter_min_complexity=filter_min_complexity,
+        filter_max_complexity=filter_max_complexity,
         filter_min_workload=filter_min_workload,
         filter_max_workload=filter_max_workload,
         filter_min_team_dynamics=filter_min_team_dynamics,
@@ -655,7 +655,8 @@ def project_detail(project_id):
             p.description,
             p.details,
             p.image_url,
-            AVG(r.difficulty) AS difficulty,
+            p.url,
+            AVG(r.complexity) AS complexity,
             AVG(r.workload) AS workload,
             AVG(r.team_dynamics) AS team_dynamics,
             AVG(r.would_recommend) AS would_recommend
@@ -700,7 +701,7 @@ def project_detail(project_id):
             r.review_text,
             r.ai_use,
             r.term,
-            r.difficulty,
+            r.complexity,
             r.workload,
             r.team_dynamics,
             r.would_recommend,
@@ -722,6 +723,17 @@ def project_detail(project_id):
     ), review_params)
 
     reviews = cursor.fetchall()
+
+    # check if the logged-in user has already reviewed this project
+    user_review_id = None
+    if 'student_id' in session:
+        cursor.execute(
+            'SELECT review_id FROM reviews WHERE project_id = %s AND student_id = %s',
+            (project_id, session['student_id'])
+        )
+        ur = cursor.fetchone()
+        if ur:
+            user_review_id = ur['review_id']
 
     # build a {review_id: vote_value} map for the logged-in user
     user_votes = {}
@@ -755,7 +767,7 @@ def project_detail(project_id):
             FROM comments c
             JOIN students s ON c.student_id = s.student_id
             WHERE c.review_id IN ({placeholders})
-            ORDER BY c.created_at ASC
+            ORDER BY helpful_count - not_helpful_count DESC, c.created_at ASC
         """, review_ids)
         comments = cursor.fetchall()
 
@@ -784,48 +796,71 @@ def project_detail(project_id):
         review_page=review_page,
         review_total_pages=review_total_pages,
         reviews_per_page=reviews_per_page,
+        user_review_id=user_review_id,
     )
 
 
 @app.route('/project/<int:project_id>/submit-review', methods=['GET', 'POST'])
 @login_required
 def submit_review(project_id):
-    """Display and process the review submission page."""
+    """Display and process the review submission page.
+
+    Redirects to the edit page if the student has already reviewed this project.
+    """
+    # check for an existing review before showing the form or processing a submission
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT review_id FROM reviews WHERE project_id = %s AND student_id = %s',
+        (project_id, session['student_id'])
+    )
+    existing = cursor.fetchone()
+    conn.close()
+
+    if existing:
+        flash('You\'ve already reviewed this project — edit your existing review below.', 'error')
+        return redirect(url_for('edit_review', review_id=existing['review_id']))
+
     if request.method == 'POST':
         term = request.form.get('term', '').strip()
         ai_use = request.form.get('ai_use', '').strip() or None
 
         try:
-            difficulty = int(request.form.get('difficulty'))
+            complexity = int(request.form.get('complexity'))
             workload = int(request.form.get('workload'))
             team_dynamics = int(request.form.get('team_dynamics'))
             would_recommend = int(request.form.get('would_recommend'))
-            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            ratings = [complexity, workload, team_dynamics, would_recommend]
             if not all(1 <= r <= 5 for r in ratings):
                 return 'Ratings must be between 1 and 5', 400
         except (TypeError, ValueError):
             return 'Invalid rating value', 400
 
         review_text = request.form.get('review_text', '').strip()
+        if len(review_text) < 50:
+            flash('Review must be at least 50 characters.', 'error')
+            terms = generate_terms()
+            return render_template('submit_review.html', project_id=project_id, terms=terms)
 
         conn = get_db_connection()
         try:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO reviews
-                    (project_id, student_id, term, difficulty, workload,
+                    (project_id, student_id, term, complexity, workload,
                      team_dynamics, would_recommend, review_text, ai_use)
                 VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 project_id, session['student_id'], term,
-                difficulty, workload, team_dynamics, would_recommend,
+                complexity, workload, team_dynamics, would_recommend,
                 review_text, ai_use,
             ))
             conn.commit()
         finally:
             conn.close()
 
+        flash('Your review has been submitted.', 'success')
         return redirect(url_for('project_detail', project_id=project_id))
 
     terms = generate_terms()
@@ -854,11 +889,11 @@ def edit_review(review_id):
         ai_use = request.form.get('ai_use', '').strip() or None
 
         try:
-            difficulty = int(request.form.get('difficulty'))
+            complexity = int(request.form.get('complexity'))
             workload = int(request.form.get('workload'))
             team_dynamics = int(request.form.get('team_dynamics'))
             would_recommend = int(request.form.get('would_recommend'))
-            ratings = [difficulty, workload, team_dynamics, would_recommend]
+            ratings = [complexity, workload, team_dynamics, would_recommend]
             if not all(1 <= r <= 5 for r in ratings):
                 conn.close()
                 return 'Ratings must be between 1 and 5', 400
@@ -867,23 +902,30 @@ def edit_review(review_id):
             return 'Invalid rating value', 400
 
         review_text = request.form.get('review_text', '').strip()
+        if len(review_text) < 50:
+            conn.close()
+            flash('Review must be at least 50 characters.', 'error')
+            terms = generate_terms()
+            return render_template('edit_review.html', review=review, terms=terms)
+
         project_id = review['project_id']
 
         try:
             cursor.execute("""
                 UPDATE reviews
-                SET term = %s, difficulty = %s, workload = %s,
+                SET term = %s, complexity = %s, workload = %s,
                     team_dynamics = %s, would_recommend = %s,
                     review_text = %s, ai_use = %s
                 WHERE review_id = %s
             """, (
-                term, difficulty, workload, team_dynamics, would_recommend,
+                term, complexity, workload, team_dynamics, would_recommend,
                 review_text, ai_use, review_id,
             ))
             conn.commit()
         finally:
             conn.close()
 
+        flash('Your review has been updated.', 'success')
         return redirect(url_for('project_detail', project_id=project_id))
 
     conn.close()
@@ -922,6 +964,7 @@ def submit_comment(review_id):
     finally:
         conn.close()
 
+    flash('Comment posted.', 'success')
     return redirect(url_for('project_detail', project_id=project_id))
 
 
@@ -1023,6 +1066,200 @@ def vote_comment(comment_id):
         conn.close()
 
     return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/review/<int:review_id>/delete', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    """Delete a review (owner only). Cascades to helpfulness votes and comments."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT student_id, project_id FROM reviews WHERE review_id = %s', (review_id,))
+    review = cursor.fetchone()
+
+    if review is None:
+        conn.close()
+        return 'Review not found', 404
+
+    if review['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    project_id = review['project_id']
+
+    try:
+        cursor.execute('DELETE FROM reviews WHERE review_id = %s', (review_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    flash('Your review has been deleted.', 'success')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    """Delete a comment (owner only). Cascades to comment helpfulness votes."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT c.student_id, r.project_id FROM comments c'
+        ' JOIN reviews r ON c.review_id = r.review_id'
+        ' WHERE c.comment_id = %s',
+        (comment_id,)
+    )
+    comment = cursor.fetchone()
+
+    if comment is None:
+        conn.close()
+        return 'Comment not found', 404
+
+    if comment['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    project_id = comment['project_id']
+
+    try:
+        cursor.execute('DELETE FROM comments WHERE comment_id = %s', (comment_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    flash('Comment deleted.', 'success')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+@app.route('/comment/<int:comment_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_comment(comment_id):
+    """Display and process the comment edit page (owner only)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT c.*, r.project_id FROM comments c'
+        ' JOIN reviews r ON c.review_id = r.review_id'
+        ' WHERE c.comment_id = %s',
+        (comment_id,)
+    )
+    comment = cursor.fetchone()
+
+    if comment is None:
+        conn.close()
+        return 'Comment not found', 404
+
+    if comment['student_id'] != session['student_id']:
+        conn.close()
+        return 'Unauthorized', 403
+
+    if request.method == 'POST':
+        comment_text = request.form.get('comment_text', '').strip()
+        if not comment_text:
+            conn.close()
+            flash('Comment cannot be empty.', 'error')
+            return render_template('edit_comment.html', comment=comment)
+
+        try:
+            cursor.execute(
+                'UPDATE comments SET comment_text = %s WHERE comment_id = %s',
+                (comment_text, comment_id)
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        flash('Comment updated.', 'success')
+        return redirect(url_for('project_detail', project_id=comment['project_id']))
+
+    conn.close()
+    return render_template('edit_comment.html', comment=comment)
+
+
+@app.route('/my-activity')
+@login_required
+def my_activity():
+    """Show all reviews and comments submitted by the logged-in student."""
+    student_id = session['student_id']
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            r.review_id,
+            r.project_id,
+            r.term,
+            r.complexity,
+            r.workload,
+            r.team_dynamics,
+            r.would_recommend,
+            r.review_text,
+            r.ai_use,
+            r.created_at,
+            p.title AS project_title
+        FROM reviews r
+        JOIN projects p ON r.project_id = p.project_id
+        WHERE r.student_id = %s
+        ORDER BY r.created_at DESC
+    """, (student_id,))
+    reviews = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            c.comment_id,
+            c.comment_text,
+            c.created_at,
+            c.review_id,
+            r.project_id,
+            p.title AS project_title,
+            s.pseudonym AS reviewer_pseudonym
+        FROM comments c
+        JOIN reviews r ON c.review_id = r.review_id
+        JOIN projects p ON r.project_id = p.project_id
+        JOIN students s ON r.student_id = s.student_id
+        WHERE c.student_id = %s
+        ORDER BY c.created_at DESC
+    """, (student_id,))
+    comments = cursor.fetchall()
+
+    conn.close()
+    return render_template('my_activity.html', reviews=reviews, comments=comments)
+
+
+@app.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    """Delete the logged-in student's account and all associated data.
+
+    FK cascades handle reviews, helpfulness votes, comments, and comment votes.
+    """
+    student_id = session['student_id']
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM students WHERE student_id = %s', (student_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    session.clear()
+    flash('Your account and all associated data have been permanently deleted.', 'success')
+    return redirect(url_for('home'))
+
+
+# ------------------------------ Error Handlers ------------------------------ #
+
+@app.errorhandler(404)
+def not_found(e):
+    """Render the custom 404 page."""
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    """Render the custom 500 page."""
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':

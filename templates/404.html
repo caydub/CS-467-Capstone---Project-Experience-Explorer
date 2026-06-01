@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found — OSU Capstone Explorer{% endblock %}
+
+{% block content %}
+<div class="empty-state" style="margin-top: 3rem;">
+    <p class="empty-title" style="font-size: 2rem;">404</p>
+    <p class="empty-title">Page not found</p>
+    <p class="empty-sub">That page doesn't exist or may have been moved.</p>
+    <a href="{{ url_for('home') }}" class="button" style="margin-top: 1.25rem;">← Back to Projects</a>
+</div>
+{% endblock %}

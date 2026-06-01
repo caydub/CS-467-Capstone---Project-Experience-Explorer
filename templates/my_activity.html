@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}My Activity — OSU Capstone Explorer{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>My Activity</h1>
+    <p>Reviews and comments you've submitted as <strong>{{ session['pseudonym'] }}</strong>.</p>
+</div>
+
+{# ---- Reviews ---- #}
+<h2>Reviews <span class="review-total-count">({{ reviews | length }})</span></h2>
+
+{% if reviews %}
+    {% for review in reviews %}
+    <div class="project-card">
+        <div class="activity-project-title">
+            <a href="{{ url_for('project_detail', project_id=review.project_id) }}">
+                {{ review.project_title }}
+            </a>
+            <span class="project-meta">· {{ review.term }}</span>
+        </div>
+
+        <div class="ratings-grid ratings-grid--compact">
+            {% set review_ratings = [
+                ('Complexity',     review.complexity),
+                ('Workload',       review.workload),
+                ('Team Dynamics',  review.team_dynamics),
+                ('Would Recommend', review.would_recommend)
+            ] %}
+            {% for label, value in review_ratings %}
+            <div class="rating-row">
+                <span class="rating-label">{{ label }}</span>
+                {% set color = rating_color(value) %}
+                <div class="rating-bar">
+                    <div class="rating-fill"
+                         style="--target-width: {{ (value * 20)|int }}%; background-color: {{ color }};"></div>
+                </div>
+                <span class="rating-value" style="color: {{ color }};">{{ value }} / 5</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if review.ai_use %}
+        <p class="ai-use-tag">🤖 AI use: {{ review.ai_use }}</p>
+        {% endif %}
+
+        {% if review.review_text %}
+        <p class="review-text">{{ review.review_text }}</p>
+        {% endif %}
+
+        <div class="activity-review-actions">
+            <a href="{{ url_for('edit_review', review_id=review.review_id) }}"
+               class="edit-review-btn">Edit</a>
+            <form method="POST"
+                  action="{{ url_for('delete_review', review_id=review.review_id) }}"
+                  class="delete-form">
+                <button type="submit" class="delete-btn"
+                        onclick="return confirm('Delete your review? This cannot be undone.')">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <p class="empty-title">No reviews yet</p>
+        <p class="empty-sub">
+            <a href="{{ url_for('home') }}">Browse projects</a> to submit your first review.
+        </p>
+    </div>
+{% endif %}
+
+{# ---- Comments ---- #}
+<h2 style="margin-top: 2rem;">Comments <span class="review-total-count">({{ comments | length }})</span></h2>
+
+{% if comments %}
+    {% for comment in comments %}
+    <div class="project-card">
+        <div class="activity-project-title">
+            <a href="{{ url_for('project_detail', project_id=comment.project_id) }}">
+                {{ comment.project_title }}
+            </a>
+            <span class="project-meta">· on {{ comment.reviewer_pseudonym }}'s review</span>
+        </div>
+
+        <div class="comment-card" style="margin: 0.5rem 0 0;">
+            <div class="comment-header">
+                <p>
+                    <span class="comment-time">{{ comment.created_at | relative_time }}</span>
+                </p>
+                <div class="comment-owner-actions">
+                    <a href="{{ url_for('edit_comment', comment_id=comment.comment_id) }}"
+                       class="delete-btn delete-btn--small">Edit</a>
+                    <form method="POST"
+                          action="{{ url_for('delete_comment', comment_id=comment.comment_id) }}"
+                          class="delete-form">
+                        <input type="hidden" name="project_id" value="{{ comment.project_id }}">
+                        <button type="submit" class="delete-btn delete-btn--small"
+                                onclick="return confirm('Delete this comment?')">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <p>{{ comment.comment_text }}</p>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <p class="empty-title">No comments yet</p>
+        <p class="empty-sub">You haven't commented on any reviews.</p>
+    </div>
+{% endif %}
+
+<a href="{{ url_for('home') }}" class="button" style="margin-top: 1rem;">&#8592; Browse Projects</a>
+
+<div class="danger-zone">
+    <h3 class="danger-zone-title">Danger Zone</h3>
+    <p class="danger-zone-desc">
+        Permanently delete your account. This removes all your reviews, comments, and votes.
+        This action cannot be undone.
+    </p>
+    <form method="POST" action="{{ url_for('delete_account') }}">
+        <button type="submit" class="danger-btn"
+                onclick="return confirm('Delete your account and all associated data? This cannot be undone.')">
+            Delete My Account
+        </button>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('.review-text').forEach(function (el) {
+        if (el.scrollHeight > el.clientHeight + 2) {
+            var btn = document.createElement('button');
+            btn.className = 'read-more-btn';
+            btn.textContent = 'Read more';
+            btn.onclick = function () {
+                el.classList.toggle('expanded');
+                btn.textContent = el.classList.contains('expanded') ? 'Read less' : 'Read more';
+            };
+            el.after(btn);
+        }
+    });
+</script>
+
+{% endblock %}
