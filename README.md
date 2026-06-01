@@ -55,6 +55,7 @@ For full setup instructions including venv, .env, and proxy download see [docs/D
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment process and GCP config |
 | [docs/TESTING.md](docs/TESTING.md) | Testing approach and how to run the test suite |
 | [docs/SCRAPING.md](docs/SCRAPING.md) | Capstone portal scraping and how to re-run the seeder |
+| [docs/AI_USE.md](docs/AI_USE.md) | AI tool usage summary for all three team members |
 
 ---
 
